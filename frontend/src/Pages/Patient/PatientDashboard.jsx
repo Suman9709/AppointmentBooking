@@ -1,9 +1,66 @@
-import React from 'react'
+import React from "react";
+import ProfileCard from "../../Components/ProfileCard";
+import AppointmentCard from "../../Components/AppointmentCard";
 
 const PatientDashboard = () => {
   return (
-    <div>PatientDashboard</div>
-  )
-}
+    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-8">
 
-export default PatientDashboard
+      <h1 className="text-3xl font-semibold text-gray-800">
+        Patient Dashboard
+      </h1>
+
+      {/* Profile Section */}
+      <ProfileCard
+        name="Rahul Sharma"
+        age={30}
+        gender="Male"
+        contact="123-456-7890"
+        GuardianName="Love Doe"
+        address="Vatican City, Rome, Italy"
+      />
+
+      {/* Upcoming Appointments */}
+      <div className="flex flex-col gap-4">
+        <h2 className="text-2xl font-semibold text-gray-700">
+          Upcoming Appointments
+        </h2>
+
+        <div className="flex flex-wrap gap-4"> 
+          <AppointmentCard
+            doctor="Dr. Sarah Smith"
+            date="10 June 2026"
+            time="10:30 AM"
+            status="Upcoming"
+          />
+
+          <AppointmentCard
+            doctor="Dr. Michael Brown"
+            date="15 June 2026"
+            time="12:00 PM"
+            status="Upcoming"
+          />
+        </div>
+      </div>
+
+      {/* Past Appointments */}
+      <div className="flex flex-col gap-4">
+        <h2 className="text-2xl font-semibold text-gray-700">
+          Past Appointments
+        </h2>
+
+       <div className="flex flex-wrap gap-4">
+         <AppointmentCard
+          doctor="Dr. John Watson"
+          date="01 May 2026"
+          time="11:00 AM"
+          status="Completed"
+        />
+       </div>
+      </div>
+
+    </div>
+  );
+};
+
+export default PatientDashboard;

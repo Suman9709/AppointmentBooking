@@ -3,7 +3,7 @@ import Button from '../Components/Button'
 
 const AppointmentPage = () => {
     return (
-        <div className="w-full px-4 sm:px-6 md:px-10 py-10 bg-gray-50">
+        <div className=" w-full px-4 sm:px-6 md:px-10 py-10 bg-gray-50">
 
             {/* Heading */}
             <div className="text-center mb-8">

@@ -6,18 +6,16 @@ import { MdOutlineWatchLater } from "react-icons/md"
 import About from './About'
 import Service from './Service'
 import AppointmentPage from './AppointmentPage'
-import Footer from '../Components/Footer'
 
 const Home = () => {
   return (
     <div>
-
       <div
-        className=" min-h-screen my-2 md:my-6 mx-4 sm:mx-6 lg:mx-10 rounded-2xl shadow-xl flex flex-col-reverse lg:flex-row gap-6 p-6 md:px-16 bg-[linear-gradient(to_right,transparent_0%,transparent_45%,#eef3ef_65%,#eef3ef_100%),linear-gradient(to_bottom,#eff9f0_0%,#eff9f0_40%,#eef3ef_60%,#eef3ef_100)]"
+        className=" my-2 md:my-6 mx-4 sm:mx-6 lg:mx-10 rounded-2xl shadow-xl flex flex-col-reverse lg:flex-row gap-6  md:px-16 bg-[linear-gradient(to_right,transparent_0%,transparent_45%,#eef3ef_65%,#eef3ef_100%),linear-gradient(to_bottom,#eff9f0_0%,#eff9f0_40%,#eef3ef_60%,#eef3ef_100)]"
       >
 
         {/* LEFT */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-center gap-5">
+        <div className="w-full lg:w-1/2 flex flex-col justify-center gap-5 px-6 py-2">
 
           <span className="
             bg-white
@@ -121,7 +119,7 @@ const Home = () => {
         </div>
 
         {/* RIGHT */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center">
+        <div className="w-full lg:w-1/2 flex items-center justify-center ">
           <img
             src={doctor}
             alt="Doctor"
@@ -137,9 +135,9 @@ const Home = () => {
       </div>
 
       <About />
-      <Service/>
-      <AppointmentPage/>
-    
+      <Service />
+      <AppointmentPage />
+
     </div>
   )
 }
