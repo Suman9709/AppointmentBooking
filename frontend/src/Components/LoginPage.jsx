@@ -3,16 +3,21 @@ import Button from './Button';
 import { Link } from 'react-router-dom';
 import { MdEmail } from "react-icons/md";
 import { IoIosLock } from "react-icons/io";
+import { useLogin } from '../hooks/useLogin';
 
 const LoginPage = () => {
+
+    const loginMutation = useLogin();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Email:", email);
-        console.log("Password:", password);
+        loginMutation.mutate({
+            patientEmail: email,
+            patientPassword: password
+        });
     }
     return (
         <div className='w-full min-h-screen flex flex-col justify-center px-4  items-center font-sans '>
@@ -30,7 +35,7 @@ const LoginPage = () => {
 
                     <div className="relative w-full">
 
-                        <MdEmail 
+                        <MdEmail
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg"
                         />
 
@@ -83,8 +88,8 @@ const LoginPage = () => {
 
 
                 <p className='text-sm sm:text-base text-center'>Not have account?  <Link
-    to="/register"
-    className="
+                    to="/register"
+                    className="
       relative
       font-semibold
       text-gray-800
@@ -98,9 +103,17 @@ const LoginPage = () => {
       after:duration-300
       hover:after:w-full
     "
-  >
-    Register Here
-  </Link></p>
+                >
+                    Register Here
+                </Link></p>
+                {
+                    loginMutation.isPending && (
+                        <p className='text-blue-500 text-sm sm:text-base mt-2'>Logging in...</p>
+                    )
+                }
+                {loginMutation.isError && (
+                    <p className='text-red-500 text-sm sm:text-base mt-2'>{loginMutation.error.message}</p>
+                )}
             </form>
         </div>
     )

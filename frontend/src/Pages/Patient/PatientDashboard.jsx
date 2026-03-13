@@ -1,8 +1,12 @@
 import React from "react";
 import ProfileCard from "../../Components/ProfileCard";
 import AppointmentCard from "../../Components/AppointmentCard";
+import { usePatient } from "../../hooks/usePatient";
 
 const PatientDashboard = () => {
+
+  const {data} = usePatient()
+    const patient = data?.loggedInUser || null
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-8">
 
@@ -12,12 +16,13 @@ const PatientDashboard = () => {
 
       {/* Profile Section */}
       <ProfileCard
-        name="Rahul Sharma"
-        age={30}
-        gender="Male"
-        contact="123-456-7890"
-        GuardianName="Love Doe"
-        address="Vatican City, Rome, Italy"
+        name={patient?.patientName}
+        email={patient?.patientEmail}
+        age={patient?.patientAge}
+        gender={patient?.gender}
+        contact={patient?.patientContact}
+        GuardianName={patient?.GuardianName}
+        address={patient?.address}
       />
 
       {/* Upcoming Appointments */}

@@ -1,16 +1,14 @@
-import AppointmentForm from "../model/appointmentFormModel";
-import Patient from "../model/PatientModel";
+import AppointmentForm from "../model/appointmentFormModel.js";
+import Patient from "../model/PatientModel.js";
 
 export const signupPatient = async (req, res) => {
     try {
-
+        const { patientName, patientEmail, patientPassword, patientContact, patientParentsName, patientAge, gender } = req.body;
         const existingUser = await Patient.findOne({ patientEmail })
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
         }
-        const { patientName, patientEmail, patientPassword, patientContact, patientParentsName, patientAge } = req.body;
-
-        if (!patientName || !patientEmail || !patientPassword || !patientContact || !patientAge) {
+        if (!patientName || !patientEmail || !patientPassword || !patientContact || !patientAge || !gender) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -20,7 +18,8 @@ export const signupPatient = async (req, res) => {
             patientPassword,
             patientContact,
             patientParentsName,
-            patientAge
+            patientAge,
+            gender
 
         });
         const token = newPatient.generateJWTToken();
@@ -139,11 +138,11 @@ export const bookAppointment = async (req, res) => {
                 newAppointment
             },
             message: "Appointment booked successfully",
-        })  
+        })
     } catch (error) {
         return res.status(500).json({ message: "Server Error" + error.message });
     }
- }
+}
 
 export const getPatientAppointments = async (req, res) => {
     try {

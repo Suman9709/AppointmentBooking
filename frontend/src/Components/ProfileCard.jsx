@@ -2,7 +2,7 @@ import React from 'react'
 import { FaUserCircle } from "react-icons/fa"
 import { FiEdit } from "react-icons/fi"
 
-const ProfileCard = ({ name, age, gender, contact, GuardianName, address, onEdit }) => {
+const ProfileCard = ({ name, age, gender, contact, GuardianName, address, onEdit,email }) => {
   return (
     <div className="w-full bg-white shadow-lg rounded-2xl p-6 border border-gray-100">
 
@@ -39,6 +39,10 @@ const ProfileCard = ({ name, age, gender, contact, GuardianName, address, onEdit
         <div>
           <p className="text-sm text-gray-500">Gender</p>
           <p className="font-semibold text-lg">{gender}</p>
+        </div>
+         <div>
+          <p className="text-sm text-gray-500">Email</p>
+          <p className="font-semibold text-lg">{email}</p>
         </div>
 
         <div>

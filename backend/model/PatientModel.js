@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const patientSchema = new mongoose.Schema({
     patientName: {
@@ -9,8 +10,11 @@ const patientSchema = new mongoose.Schema({
     patientEmail: {
         type: String,
         required: true,
-
         unique: true
+    },
+    gender: {
+        type: String,
+        enum: ["Male", "Female", "Other"],
     },
     patientPassword: {
         type: String,
@@ -23,9 +27,41 @@ const patientSchema = new mongoose.Schema({
     patientAge: {
         type: Number,
         required: true
+    },
+    address: {
+        type: String,
+    },
+    patientParentsName: {
+        type: String,
     }
-}, {timestamps: true});
+}, { timestamps: true });
 
+
+patientSchema.pre("save", async function () {
+    if (!this.isModified("patientPassword")) {
+        return;
+    }
+    const salt = await bcrypt.genSalt(10);
+    this.patientPassword = await bcrypt.hash(this.patientPassword, salt);
+})
+
+
+patientSchema.methods.comparePassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.patientPassword);
+}
+
+patientSchema.methods.generateJWTToken = function () {
+    return jwt.sign(
+        {
+            patientId: this._id,
+            patientName: this.patientName,
+            patientEmail: this.patientEmail,
+
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+    );
+};
 
 const Patient = mongoose.model("Patient", patientSchema);
 export default Patient;
