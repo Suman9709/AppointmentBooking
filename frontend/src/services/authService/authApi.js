@@ -16,12 +16,17 @@ export const patientRegister = async (patientData) => {
 }
 
 export const patientLogin = async (patientData) => {
-    const response = await API.post("/patientLogin", patientData)
-    return response.data
+    try {
+        const response = await API.post("/patientLogin", patientData)
+        return response.data
+    } catch (error) {
+console.log();
+
+    }
 }
 
 
-export const logout = async()=>{
+export const logout = async () => {
     const response = await API.post("/patientlogout")
     return response.data
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePatient } from '../hooks/usePatient'
 import { useLogout } from '../hooks/useLogout'
@@ -6,8 +6,6 @@ import { useLogout } from '../hooks/useLogout'
 const Navbar = () => {
 
   const { data } = usePatient()
-
-
   const patient = data?.loggedInUser || null
   const logoutMutation = useLogout()
 
@@ -39,7 +37,14 @@ const Navbar = () => {
   }
 
   // show menu depending on login
-  const menuToShow = patient ? menu.patient : menu.public
+  // const menuToShow = patient ? menu.patient : menu.public
+  const menuToShow = useMemo(() => {
+    return patient ? menu.patient : menu.public;
+  }, [patient]);
+
+  const avatarLetter = useMemo(() => {
+    return patient?.patientName?.charAt(0).toUpperCase();
+  }, [patient]);
 
   const [ismobilemenu, setIsmobilemenu] = useState(false)
 
@@ -70,7 +75,8 @@ const Navbar = () => {
           {patient && (
            <div className='border-2 rounded-full px-4 py-2 '>
              <p className="font-semibold  ">
-              {patient.patientName?.charAt(0).toUpperCase()}
+              {/* {patient.patientName?.charAt(0).toUpperCase()} */}
+              {avatarLetter}
             </p>
            </div>
           )}
