@@ -4,55 +4,53 @@ import DoctorSlot from "../model/doctorSlotModel.js";
 export const createSlot = async (req, res) => {
     try {
         const user = req.user;
+
         if (!user) {
-            return res.status(404).json({ message: "User not found, please login to create slot" });
+            return res.status(401).json({
+                message: "Unauthorized. Please login."
+            });
         }
 
         const { date, startTime, endTime } = req.body;
 
+        // 🔹 Basic validation
         if (!date || !startTime || !endTime) {
-            return res.status(400).json({ message: "Date, start time and end time are required to create slot" });
+            return res.status(400).json({
+                message: "Date, startTime and endTime are required"
+            });
         }
 
-        // Additional validation can be added here (e.g., check for overlapping slots)
+        // 🔹 Convert into proper DateTime (IMPORTANT FIX)
+        const slotStartDateTime = new Date(`${date}T${startTime}:00`);
+        const slotEndDateTime = new Date(`${date}T${endTime}:00`);
+        const now = new Date();
 
-        if (startTime >= endTime) {
+        // 🔹 Validate invalid date
+        if (isNaN(slotStartDateTime) || isNaN(slotEndDateTime)) {
+            return res.status(400).json({
+                message: "Invalid date or time format"
+            });
+        }
+
+        // 🔹 Start must be before end
+        if (slotStartDateTime >= slotEndDateTime) {
             return res.status(400).json({
                 message: "Start time must be earlier than end time"
             });
         }
-        // Validate slot is not in the past
-        const now = new Date();
 
-        // Parse hours and minutes from startTime
-        const [startHour, startMinute] = startTime.split(":").map(Number);
-        const slotStartDateTime = new Date(date);
-        slotStartDateTime.setHours(startHour, startMinute, 0, 0);
-
+        // 🔹 Prevent past slot
         if (slotStartDateTime < now) {
             return res.status(400).json({
                 message: "Cannot create slot in the past"
             });
         }
 
-        // Validate startTime < endTime
-        const [endHour, endMinute] = endTime.split(":").map(Number);
-        const slotEndDateTime = new Date(date);
-        slotEndDateTime.setHours(endHour, endMinute, 0, 0);
-
-        if (slotEndDateTime <= slotStartDateTime) {
-            return res.status(400).json({
-                message: "End time must be after start time"
-            });
-        }
-
-
-        //Over lapping slot check
+        // 🔹 Overlapping check (FIXED using DateTime)
         const overlappingSlot = await DoctorSlot.findOne({
             doctorId: user._id,
-            date,
-            startTime: { $lt: endTime },
-            endTime: { $gt: startTime }
+            startDateTime: { $lt: slotEndDateTime },
+            endDateTime: { $gt: slotStartDateTime }
         });
 
         if (overlappingSlot) {
@@ -61,25 +59,28 @@ export const createSlot = async (req, res) => {
             });
         }
 
-        // Assuming DoctorSlot is imported from the model
+        // 🔹 Create slot
         const newSlot = new DoctorSlot({
             doctorId: user._id,
-            date,
-            startTime,
-            endTime
+            date: new Date(date), // optional (for filtering by date)
+            startDateTime: slotStartDateTime,
+            endDateTime: slotEndDateTime
         });
 
-
         const savedSlot = await newSlot.save();
+
         return res.status(201).json({
             message: "Slot created successfully",
             slot: savedSlot
         });
 
     } catch (error) {
-        return res.status(500).json({ message: "Error creating slot", error: error.message });
+        return res.status(500).json({
+            message: "Error creating slot",
+            error: error.message
+        });
     }
-}
+};
 
 export const getAllSlots = async (req, res) => {
     try {

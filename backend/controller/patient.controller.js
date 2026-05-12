@@ -1,97 +1,434 @@
 import AppointmentForm from "../model/appointmentFormModel.js";
 import Patient from "../model/PatientModel.js";
+import User from "../model/userModel.js";
+// export const signupPatient = async (req, res) => {
+//     try {
+//         const { patientName, patientEmail, patientPassword, patientContact, patientParentsName, patientAge, gender } = req.body;
+//         const existingUser = await Patient.findOne({ patientEmail })
+//         if (existingUser) {
+//             return res.status(400).json({ message: "User already exists" });
+//         }
+//         if (!patientName || !patientEmail || !patientPassword || !patientContact || !patientAge || !gender) {
+//             return res.status(400).json({ message: "All fields are required" });
+//         }
 
-export const signupPatient = async (req, res) => {
+//         const newPatient = await Patient.create({
+//             patientName,
+//             patientEmail,
+//             patientPassword,
+//             patientContact,
+//             patientParentsName,
+//             patientAge,
+//             gender
+
+//         });
+//         const token = newPatient.generateJWTToken();
+
+
+//         const patinetData = await Patient.findById(newPatient._id).select("-patientPassword");
+//         res.cookie("patienttoken", token, {
+//             httpOnly: true,
+//             expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //7 days
+//         },
+//         )
+
+
+//         res.status(201).json({
+//             success: true,
+//             data: {
+//                 patinetData
+//             },
+//             message: "Patient registered successfully"
+//         });
+//     } catch (error) {
+//         return res.status(500).json({ message: "Server Error" + error.message });
+//     }
+// }
+
+
+export const signupPatient = async (
+    req,
+    res
+) => {
+
     try {
-        const { patientName, patientEmail, patientPassword, patientContact, patientParentsName, patientAge, gender } = req.body;
-        const existingUser = await Patient.findOne({ patientEmail })
+
+        const {
+            name,
+            email,
+            password,
+            gender,
+            age,
+            contact,
+            address,
+            parentName
+        } = req.body;
+
+
+        console.log(req.body);
+
+        // VALIDATION
+
+        if (
+            !name ||
+            !email ||
+            !password ||
+            !gender ||
+            !age ||
+            !contact
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "All fields are required"
+
+            });
+        }
+
+
+        // CHECK EXISTING USER
+
+        const existingUser =
+            await User.findOne({ email });
+
         if (existingUser) {
-            return res.status(400).json({ message: "User already exists" });
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "User already exists"
+
+            });
         }
-        if (!patientName || !patientEmail || !patientPassword || !patientContact || !patientAge || !gender) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
 
-        const newPatient = await Patient.create({
-            patientName,
-            patientEmail,
-            patientPassword,
-            patientContact,
-            patientParentsName,
-            patientAge,
-            gender
 
-        });
-        const token = newPatient.generateJWTToken();
+        // CREATE USER
 
-        res.cookie("patienttoken", token, {
-            httpOnly: true,
-            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //7 days
-        },
-        )
-        res.status(201).json({
+        const newUser =
+            await User.create({
+
+                name,
+                email,
+                password,
+                role: "PATIENT"
+
+            });
+
+
+        // CREATE PATIENT PROFILE
+
+        const patientProfile =
+            await Patient.create({
+
+                userId: newUser._id,
+
+                gender,
+                age,
+                contact,
+                address,
+                parentName
+
+            });
+
+
+        // GENERATE TOKEN
+
+        const token =
+            newUser.generateJWTToken();
+
+
+        // STORE COOKIE
+
+        res.cookie(
+            "patienttoken",
+            token,
+            {
+                httpOnly: true,
+                secure: false,
+                sameSite: "lax",
+
+                expires: new Date(
+                    Date.now() +
+                    7 * 24 * 60 * 60 * 1000
+                )
+            }
+        );
+
+
+        return res.status(201).json({
+
             success: true,
+
+            message:
+                "Patient registered successfully",
+
             data: {
-                newPatient
-            },
-            message: "Patient registered successfully"
+                user: newUser,
+                patientProfile
+            }
+
         });
+
     } catch (error) {
-        return res.status(500).json({ message: "Server Error" + error.message });
-    }
-}
+        console.log(error.stack);
+        return res.status(500).json({
 
-export const loginPatient = async (req, res) => {
-    try {
-        const { patientEmail, patientPassword } = req.body;
+            success: false,
 
-        if (!patientEmail || !patientPassword) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-        const patient = await Patient.findOne({ patientEmail });
-        if (!patient) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
-        const isPasswordMMatched = await patient.comparePassword(patientPassword);
-        if (!isPasswordMMatched) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
-        const token = patient.generateJWTToken();
-        console.log("patient token", token);
+            message:
+                "Server Error: " +
+                error.message
 
-        res.cookie("patienttoken", token, {
-            httpOnly: true,
-            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //7 days
-        },
-        )
-        res.status(200).json({
-            success: true,
-            data: {
-                patient
-            },
-            message: "Patient logged in successfully"
         });
-    } catch (error) {
-        return res.status(500).json({ message: "Server Error" + error.message });
     }
-}
+};
 
-export const getPatientProfile = async (req, res) => {
+
+
+
+// export const loginPatient = async (req, res) => {
+//     try {
+//         const { patientEmail, patientPassword } = req.body;
+
+//         if (!patientEmail || !patientPassword) {
+//             return res.status(400).json({ message: "All fields are required" });
+//         }
+//         const patient = await Patient.findOne({ patientEmail });
+//         if (!patient) {
+//             return res.status(400).json({ message: "Invalid credentials" });
+//         }
+//         const isPasswordMMatched = await patient.comparePassword(patientPassword);
+//         if (!isPasswordMMatched) {
+//             return res.status(400).json({ message: "Invalid credentials" });
+//         }
+//         const token = patient.generateJWTToken();
+//         console.log("patient token", token);
+
+//         res.cookie("patienttoken", token, {
+//             httpOnly: true,
+//             expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //7 days
+//         },
+//         )
+//         res.status(200).json({
+//             success: true,
+//             data: {
+//                 patient
+//             },
+//             message: "Patient logged in successfully"
+//         });
+//     } catch (error) {
+//         return res.status(500).json({ message: "Server Error" + error.message });
+//     }
+// }
+
+
+export const loginPatient = async (
+    req,
+    res
+) => {
+
     try {
-        const loggedInUser = req.user;
-        if (!loggedInUser) {
-            return res.status(404).json({ message: "User not found, please login to view profile" });
+
+        const {
+            email,
+            password
+        } = req.body;
+
+
+        if (
+            !email ||
+            !password
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "All fields are required"
+
+            });
         }
+
+
+        // FIND USER
+
+        const user =
+            await User.findOne({
+
+                email,
+                role: "PATIENT"
+
+            });
+
+
+        if (!user) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Invalid credentials"
+
+            });
+        }
+
+
+        // CHECK PASSWORD
+
+        const isPasswordMatched =
+            await user.comparePassword(
+                password
+            );
+
+
+        if (!isPasswordMatched) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Invalid credentials"
+
+            });
+        }
+
+
+        // TOKEN
+
+        const token =
+            user.generateJWTToken();
+
+
+        // COOKIE
+
+        res.cookie(
+            "patienttoken",
+            token,
+            {
+                httpOnly: true,
+                secure: false,
+                sameSite: "lax",
+
+                expires: new Date(
+                    Date.now() +
+                    7 * 24 * 60 * 60 * 1000
+                )
+            }
+        );
+
+
+        // PROFILE
+
+        const patientProfile =
+            await Patient.findOne({
+
+                userId: user._id
+
+            });
+
 
         return res.status(200).json({
+
             success: true,
-            data: { loggedInUser },
-            message: "Patient profile fetched successfully",
-        })
+
+            message:
+                "Patient login successful",
+
+            data: {
+                user,
+                patientProfile
+            }
+
+        });
+
     } catch (error) {
-        return res.status(500).json({ message: "Server Error" + error.message });
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Server Error: " +
+                error.message
+
+        });
     }
-}
+};
+
+// export const getPatientProfile = async (req, res) => {
+//     try {
+//         const loggedInUser = req.user;
+//         if (!loggedInUser) {
+//             return res.status(404).json({ message: "User not found, please login to view profile" });
+//         }
+
+//         return res.status(200).json({
+//             success: true,
+//             data: { loggedInUser },
+//             message: "Patient profile fetched successfully",
+//         })
+//     } catch (error) {
+//         return res.status(500).json({ message: "Server Error" + error.message });
+//     }
+// }
+
+
+export const getPatientProfile = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const user = req.user;
+
+
+        const patientProfile =
+            await Patient.findOne({
+
+                userId: user._id
+
+            });
+
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "Patient profile fetched successfully",
+
+            data: {
+                user,
+                patientProfile
+            }
+
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Server Error: " +
+                error.message
+
+        });
+    }
+};
+
+
+
 
 export const updatePatientProfile = async (req, res) => {
     try {

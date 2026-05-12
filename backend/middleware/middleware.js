@@ -1,101 +1,148 @@
-import User from "../model/userModel.js";
-import Patient from "../model/PatientModel.js";
 import jwt from "jsonwebtoken";
+import User from "../model/userModel.js";
 
-export const verifyJWT = async (req, res, next) => {
+export const verifyJWT = async (
+    req,
+    res,
+    next
+) => {
     try {
 
+        // TOKENS
+
+        const adminToken = req.cookies.admintoken;
+
+        const doctorToken =req.cookies.doctortoken;
+
+        const patientToken =req.cookies.patienttoken;
+
+
+        // PICK TOKEN
+
         const token =
-            req.cookies.admintoken ||
-            req.cookies.doctortoken ||
-            req.cookies.patienttoken;
+            adminToken ||
+            doctorToken ||
+            patientToken;
 
         if (!token) {
             return res.status(401).json({
                 success: false,
-                message: "Unauthorized, no token"
+                message:
+                    "Unauthorized, no token",
             });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        let user;
+        // VERIFY TOKEN
 
-        // ADMIN / DOCTOR
-        if (decoded.userId) {
-            user = await User.findById(decoded.userId).select("-password");
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
 
-            if (!user) {
-                return res.status(401).json({
-                    success: false,
-                    message: "User not found"
-                });
-            }
 
-            if (!user.isActive) {
-                return res.status(403).json({
-                    success: false,
-                    message: "User is deactivated"
-                });
-            }
+        // FIND USER
+
+        const user = await User.findById(decoded.userId).select("-password");
+
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
         }
 
-        // PATIENT
-        else if (decoded.patientId) {
-            user = await Patient
-                .findById(decoded.patientId)
-                .select("-patientPassword");
 
-            if (!user) {
-                return res.status(401).json({
-                    success: false,
-                    message: "Patient not found"
-                });
-            }
+        // CHECK ACTIVE
+
+        if (!user.isActive) {
+            return res.status(403).json({
+                success: false,
+                message:
+                    "User account is deactivated",
+            });
         }
+
+
+        // STORE USER
 
         req.user = user;
 
         next();
 
     } catch (error) {
+
+        console.log(error);
+
         return res.status(401).json({
             success: false,
-            message: "Unauthorized, invalid token"
+            message:
+                "Unauthorized, invalid token",
         });
     }
 };
 
-export const isAdmin = (req, res, next) => {
 
-    if (!req.user || req.user.role !== "ADMIN") {
+
+// ================= ADMIN =================
+
+export const isAdmin = (
+    req,
+    res,
+    next
+) => {
+
+    if (req.user.role !== "ADMIN") {
+
         return res.status(403).json({
             success: false,
-            message: "Forbidden, admin access required"
+            message:
+                "Admin access required",
         });
     }
 
     next();
 };
 
-export const isDoctor = (req, res, next) => {
 
-    if (!req.user || req.user.role !== "DOCTOR") {
+
+// ================= DOCTOR =================
+
+export const isDoctor = (
+    req,
+    res,
+    next
+) => {
+
+    if (req.user.role !== "DOCTOR") {
+
         return res.status(403).json({
             success: false,
-            message: "Forbidden, doctor access required"
+            message:
+                "Doctor access required",
         });
     }
 
     next();
 };
 
-export const isPatient = (req, res, next) => {
 
-    if (!req.cookies.patienttoken) {
+
+// ================= PATIENT =================
+
+export const isPatient = (
+    req,
+    res,
+    next
+) => {
+
+    if (req.user.role !== "PATIENT") {
+
         return res.status(403).json({
             success: false,
-            message: "Forbidden, patient access required"
+            message:
+                "Patient access required",
         });
     }
 

@@ -8,11 +8,16 @@ const API = axios.create({
 // const API_URL = "http://localhost:5000/api/patient";
 
 
-export const patientRegister = async (patientData) => {
-    const response = await API.post("/patientRegister", patientData)
-    // console.log("Register patient data", response.data);
 
-    return response.data
+export const patientRegister = async (patientData) => {
+    try {
+        const response = await API.post("/patientRegister", patientData)
+        // console.log("Register patient data", response.data);
+        return response.data
+    } catch (error) {
+        console.error("Error during patient registration", error.response?.data || error.message);
+        throw error;
+    }
 }
 
 export const patientLogin = async (patientData) => {
@@ -20,13 +25,19 @@ export const patientLogin = async (patientData) => {
         const response = await API.post("/patientLogin", patientData)
         return response.data
     } catch (error) {
-console.log();
-
+        console.error("Error during patient login", error.response?.data || error.message);
+        throw error;
     }
 }
 
 
 export const logout = async () => {
-    const response = await API.post("/patientlogout")
-    return response.data
+    try {
+        const response = await API.post("/patientlogout")
+        return response.data
+    } catch (error) {
+        console.error("Error during patient logout", error);
+        throw error;
+    }
 }
+

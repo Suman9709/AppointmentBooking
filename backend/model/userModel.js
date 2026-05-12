@@ -1,13 +1,112 @@
+// import mongoose from "mongoose";
+// import bcrypt from "bcryptjs"
+// import jwt from "jsonwebtoken";
+
+// const userSchema = new mongoose.Schema({
+//     name: {
+//         type: String,
+//         required: true,
+//         trim: true,
+//     },
+//     email: {
+//         type: String,
+//         required: true,
+//         unique: true,
+//         lowercase: true,
+//         trim: true,
+//     },
+//     password: {
+//         type: String,
+//         required: true,
+//     },
+//     role: {
+//         type: String,
+//         enum: ['ADMIN', 'DOCTOR', 'PATIENT'],
+//         default: 'PATIENT'
+//     },
+//     isActive: {
+//         type: Boolean,
+//         default: true
+//     },
+//     patientDetails: {
+//         age: {
+//             type: Number,
+//             required: function () {
+//                 return this.role === "PATIENT";
+//             }
+//         },
+//         gender: {
+//             type: String,
+//             enum: ["Male", "Female", "Other"],
+//             required: function () {
+//                 return this.role === "PATIENT";
+//             }
+//         },
+//         contact: {
+//             type: String,
+//             required: function () {
+//                 return this.role === "PATIENT";
+//             }
+//         },
+//         address: {
+//             type: String
+//         },
+//         parentName: {
+//             type: String
+//         }
+//     }
+
+// }, { timestamps: true });
+
+
+
+// userSchema.pre("save", async function (next) {
+//     if (!this.isModified("password")) {
+//         return next();
+//     }
+//     const salt = await bcrypt.genSalt(10);
+//     this.password = await bcrypt.hash(this.password, salt);
+//     next();
+// });
+
+// userSchema.methods.comparePassword = async function (enteredPassword) {
+//     return await bcrypt.compare(enteredPassword, this.password);
+// }
+
+
+// userSchema.methods.generateJWTToken = function () {
+//     return jwt.sign(
+//         {
+//             userId: this._id,
+//             name: this.name,
+//             email: this.email,
+//             role: this.role,
+//         },
+//         process.env.JWT_SECRET,
+//         {
+//             expiresIn: process.env.JWT_EXPIRES_IN,
+//         }
+//     )
+// }
+// const User = mongoose.model("User", userSchema);
+
+// export default User;
+
+
+
+
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema({
+
     name: {
         type: String,
         required: true,
         trim: true,
     },
+
     email: {
         type: String,
         required: true,
@@ -15,51 +114,84 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         trim: true,
     },
+
     password: {
         type: String,
         required: true,
     },
+
     role: {
         type: String,
-        enum: ['ADMIN', 'DOCTOR', 'PATIENT'],
-        default: 'PATIENT'
+        enum: ["ADMIN", "DOCTOR", "PATIENT"],
+        required: true,
     },
+
     isActive: {
         type: Boolean,
-        default: true
+        default: true,
     },
 
 }, { timestamps: true });
 
 
+// HASH PASSWORD
 
-userSchema.pre("save", async function () {
-    if (!this.isModified("password")) {
-        return ;
-    }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-})
+userSchema.pre("save", async function (next) {
 
-userSchema.methods.comparePassword = async function (enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
-}
+ try {
+       if (!this.isModified("password")) {
+           return next();
+       }
+   
+       const salt = await bcrypt.genSalt(10);
+   
+       this.password = await bcrypt.hash(
+           this.password,
+           salt
+       );
+       next();
+   
+ } catch (error) {
+   
+    //  next(error);
+        console.error("Error hashing password:", error);
+ }
+});
 
 
-userSchema.methods.generateJWTToken = function () {
-    return jwt.sign(
-        {
-            userId: this._id,
-            name: this.name,
-            email: this.email,
-            role: this.role,
-        },
-        process.env.JWT_SECRET,
-        {
-            expiresIn: process.env.JWT_EXPIRES_IN,
-        }
-    )
-}
+// COMPARE PASSWORD
+
+userSchema.methods.comparePassword =
+    async function (enteredPassword) {
+
+        return await bcrypt.compare(
+            enteredPassword,
+            this.password
+        );
+    };
+
+
+// GENERATE JWT
+
+userSchema.methods.generateJWTToken =
+    function () {
+
+        return jwt.sign(
+            {
+                userId: this._id,
+                role: this.role,
+                email: this.email,
+            },
+
+            process.env.JWT_SECRET,
+
+            {
+                expiresIn:
+                    process.env.JWT_EXPIRES_IN || "7d",
+            }
+        );
+    };
+
 const User = mongoose.model("User", userSchema);
 
 export default User;

@@ -2,37 +2,16 @@ import mongoose from "mongoose";
 
 const appointmentFormSchema = new mongoose.Schema({
 
-    doctorId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Doctor",
-        required: true
-    },
-
-    departmentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Department",
-        required: true
-    },
-
     slotId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "DoctorSlot",
-        required: true
+        required: true,
+        unique: true
     },
 
     patientId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Patient",
-        required: true
-    },
-
-    appointmentDate: {
-        type: Date,
-        required: true
-    },
-
-    appointmentSlot: {
-        type: String,
+        ref: "User",
         required: true
     },
 
@@ -44,10 +23,7 @@ const appointmentFormSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-appointmentFormSchema.index(
-  { slotId: 1, appointmentDate: 1 },
-  { unique: true }
-);
+appointmentFormSchema.index({ patientId: 1 });
 
 const AppointmentForm = mongoose.model("AppointmentForm", appointmentFormSchema);
 export default AppointmentForm;

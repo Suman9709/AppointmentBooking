@@ -1,32 +1,114 @@
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+
 import { usePatient } from '../hooks/usePatient'
+import { useAdmin } from '../hooks/useAdmin'
+// import { useDoctor } from '../hooks/useDoctor'
+
 import { useLogout } from '../hooks/useLogout'
 
 const Navbar = () => {
 
-  const { data } = usePatient()
-  const patient = data?.loggedInUser || null
+  // ================= FETCH USERS =================
+
+  const { data: patientData } = usePatient()
+
+  const { data: adminData } = useAdmin()
+
+  // const { data: doctorData } = useDoctor()
+
+
+
+  // ================= USER DATA =================
+
+const patient =
+  patientData?.user || null
+
+const admin =
+  adminData?.data || null
+
+
+
+  // const doctor =
+  //   doctorData?.data?.user || null
+
+  const doctor = null
+
+
+
+  // ================= LOGGED USER =================
+
+ 
+
+
+
+  // ================= ROLE =================
+
+  const role = useMemo(() => {
+
+  if (admin?.role === "ADMIN") {
+    return "ADMIN"
+  }
+
+  if (doctor?.role === "DOCTOR") {
+    return "DOCTOR"
+  }
+
+  if (patient?.role === "PATIENT") {
+    return "PATIENT"
+  }
+
+  return null
+
+}, [admin, doctor, patient])
+
+const loggedInUser = useMemo(() => {
+
+  switch (role) {
+
+    case "ADMIN":
+      return admin
+
+    case "DOCTOR":
+      return doctor
+
+    case "PATIENT":
+      return patient
+
+    default:
+      return null
+  }
+
+}, [role, admin, doctor, patient])
+
+  // ================= LOGOUT =================
+
   const logoutMutation = useLogout()
 
-  console.log(patient);
+
+
+  // ================= MENUS =================
 
   const menu = {
+
     public: [
       { name: 'Home', link: '/' },
     ],
+
     admin: [
       { name: 'Home', link: '/' },
       { name: 'Dashboard', link: '/admindashboard' },
       { name: 'Create Doctors', link: '/managedoctors' },
       { name: 'Doctor List', link: '/doctorlist' }
     ],
+
     doctor: [
       { name: 'Home', link: '/' },
       { name: 'Dashboard', link: '/doctordashboard' },
       { name: 'Appointments', link: '/appointments' },
       { name: 'Patients', link: '/patients' }
     ],
+
     patient: [
       { name: 'Home', link: '/' },
       { name: 'Dashboard', link: '/patientdashboard' },
@@ -36,121 +118,232 @@ const Navbar = () => {
     ]
   }
 
-  // show menu depending on login
-  // const menuToShow = patient ? menu.patient : menu.public
+
+
+  // ================= MENU TO SHOW =================
+
   const menuToShow = useMemo(() => {
-    return patient ? menu.patient : menu.public;
-  }, [patient]);
+
+    if (admin) {
+      return menu.admin
+    }
+
+    if (doctor) {
+      return menu.doctor
+    }
+
+    if (patient) {
+      return menu.patient
+    }
+
+    return menu.public
+
+  }, [admin, doctor, patient])
+
+
+
+  // ================= AVATAR =================
 
   const avatarLetter = useMemo(() => {
-    return patient?.patientName?.charAt(0).toUpperCase();
-  }, [patient]);
 
-  const [ismobilemenu, setIsmobilemenu] = useState(false)
+    return loggedInUser?.name
+      ?.charAt(0)
+      ?.toUpperCase()
+
+  }, [loggedInUser])
+
+
+
+  // ================= MOBILE MENU =================
+
+  const [ismobilemenu, setIsmobilemenu] =
+    useState(false)
+
+
 
   return (
+
     <div className="w-full px-4 mt-6">
 
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-2 md:px-8 border bg-linear-to-r from-white via-sky-100 via-70% to-white border-gray-200 rounded-full backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-2 md:px-8 border border-gray-200 rounded-full bg-gradient-to-r from-white via-sky-100 via-70% to-white backdrop-blur-xl shadow-md">
 
-        {/* Logo */}
-        <img src="/image/logo.png" alt="" className="w-12 h-12 md:w-14 md:h-14" />
+        {/* ================= LOGO ================= */}
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex space-x-6 text-lg font-medium">
+        <Link to="/">
+          <img
+            src="/image/logo.png"
+            alt="logo"
+            className="w-12 h-12 md:w-14 md:h-14"
+          />
+        </Link>
+
+
+
+        {/* ================= DESKTOP MENU ================= */}
+
+        <div className="hidden md:flex items-center gap-6 text-lg font-medium">
+
           {menuToShow.map((menuItem) => (
+
             <Link
               key={menuItem.name}
               to={menuItem.link}
-              className="hover:text-gray-600"
+              className="hover:text-sky-600 transition duration-200"
             >
               {menuItem.name}
             </Link>
+
           ))}
+
         </div>
 
-        {/* Right Side User Section */}
+
+
+        {/* ================= RIGHT SECTION ================= */}
+
         <div className="hidden md:flex items-center gap-4">
 
-          {patient && (
-           <div className='border-2 rounded-full px-4 py-2 '>
-             <p className="font-semibold  ">
-              {/* {patient.patientName?.charAt(0).toUpperCase()} */}
-              {avatarLetter}
-            </p>
-           </div>
+          {loggedInUser && (
+
+            <div className="w-10 h-10 rounded-full border-2 border-sky-500 bg-sky-100 flex justify-center items-center">
+
+              <p className="font-bold text-sky-700">
+                {avatarLetter}
+              </p>
+
+            </div>
+
           )}
 
-          {patient ? (
+
+
+          {loggedInUser ? (
+
             <button
-                    onClick={() => logoutMutation.mutate()}
-                    className="text-white p-2  font-medium text-center cursor-pointer border-0 rounded-lg bg-red-600"
-                  >
-                    Logout
-                  </button>
+              onClick={() =>
+                logoutMutation.mutate(role)
+              }
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200 cursor-pointer"
+            >
+              Logout
+            </button>
+
           ) : (
+
             <Link
               to="/login"
-              className="font-medium hover:text-gray-600"
+              className="font-medium hover:text-sky-600 transition duration-200"
             >
               Login
             </Link>
+
           )}
 
         </div>
 
-        {/* Mobile Menu Button */}
+
+
+        {/* ================= MOBILE MENU ================= */}
+
         <div className="md:hidden relative">
-          <button onClick={() => setIsmobilemenu(!ismobilemenu)}>
+
+          <button
+            onClick={() =>
+              setIsmobilemenu(!ismobilemenu)
+            }
+          >
+
             {ismobilemenu ? (
-              <img src="/image/cross.png" alt="close menu" className="w-6 h-6" />
+
+              <img
+                src="/image/cross.png"
+                alt="close"
+                className="w-6 h-6"
+              />
+
             ) : (
-              <img src="/image/hamburg.png" alt="menu" className="w-6 h-6" />
+
+              <img
+                src="/image/hamburg.png"
+                alt="menu"
+                className="w-6 h-6"
+              />
+
             )}
+
           </button>
 
+
+
+          {/* ================= MOBILE DROPDOWN ================= */}
+
           {ismobilemenu && (
-            <div className="absolute right-0 top-12 bg-white shadow-lg rounded-lg flex flex-col space-y-4 p-4">
+
+            <div className="absolute right-0 top-12 bg-white shadow-xl rounded-xl p-4 flex flex-col gap-4 min-w-[220px] z-50">
 
               {menuToShow.map((menuItem) => (
+
                 <Link
                   key={menuItem.name}
                   to={menuItem.link}
-                  onClick={() => setIsmobilemenu(false)}
-                  className="hover:text-gray-600"
+                  onClick={() =>
+                    setIsmobilemenu(false)
+                  }
+                  className="hover:text-sky-600 transition"
                 >
                   {menuItem.name}
                 </Link>
+
               ))}
 
-              {/* Mobile Login / Logout */}
-              {patient ? (
+
+
+              {loggedInUser ? (
+
                 <>
-                  <p className="font-semibold">
-                    {patient.patientName?.split(" ")[0]}
+
+                  <p className="font-semibold text-sky-700">
+
+                    {
+                      loggedInUser?.name
+                        ?.split(" ")[0]
+                    }
+
                   </p>
+
                   <button
-                    onClick={() => logoutMutation.mutate()}
-                    className="text-white p-2  font-medium text-center cursor-pointer border-0 rounded-lg bg-red-600"
+                    onClick={() =>
+                      logoutMutation.mutate(role)
+                    }
+                    className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition"
                   >
                     Logout
                   </button>
+
                 </>
+
               ) : (
+
                 <Link
                   to="/login"
-                  onClick={() => setIsmobilemenu(false)}
-                  className="hover:text-gray-600"
+                  onClick={() =>
+                    setIsmobilemenu(false)
+                  }
+                  className="hover:text-sky-600 transition"
                 >
                   Login
                 </Link>
+
               )}
 
             </div>
+
           )}
+
         </div>
 
       </div>
+
     </div>
   )
 }

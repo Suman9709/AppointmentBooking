@@ -24,11 +24,11 @@ const SignupPage = () => {
     e.preventDefault()
 
     signupMutation.mutate({
-      patientName: name,
-      patientEmail: email,
-      patientPassword: password,
-      patientContact: patientContact,
-      patientAge: patientAge,
+      name: name,
+      email: email,
+      password: password,
+      contact: patientContact,
+      age: patientAge,
       gender: gender
     })
 

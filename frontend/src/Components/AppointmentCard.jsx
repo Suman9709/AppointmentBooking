@@ -1,8 +1,13 @@
 import React from "react";
 import { FaUserMd } from "react-icons/fa";
 import { MdDateRange, MdAccessTime } from "react-icons/md";
+import { usePatient } from "../hooks/usePatient";
 
 const AppointmentCard = ({ doctor, date, time, status }) => {
+
+
+  const { data } = usePatient()
+  const patient = data?.user || null
   return (
     <div className="bg-white border border-gray-100 shadow-md rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:shadow-lg transition">
 
