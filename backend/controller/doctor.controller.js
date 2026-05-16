@@ -29,7 +29,7 @@ export const doctorLogin = async (req, res) => {
         res.cookie("doctortoken", token, {
             httpOnly: true,
             sameSite: "None",
-            secure: false,
+            secure: true,
             expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
         res.status(200).json({
@@ -118,7 +118,8 @@ export const doctorLogout = async (req, res) => {
         res.clearCookie("doctortoken", {
             httpOnly: true,
             sameSite: "None",
-            secure: false,
+            secure: true,
+            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
 
         return res.status(200).json({
