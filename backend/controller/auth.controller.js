@@ -54,7 +54,7 @@ export const adminRegister = async (req,res) => {
             {
                 httpOnly: true,
                 secure: false,
-                sameSite: "lax",
+                sameSite: "None",
 
                 expires: new Date(
                     Date.now() +
@@ -164,7 +164,7 @@ export const adminLogin = async (req,res) => {
             {
                 httpOnly: true,
                 secure: false,
-                sameSite: "lax",
+                sameSite: "None",
 
                 expires: new Date(
                     Date.now() +
@@ -260,7 +260,7 @@ export const adminLogout = async (
             {
                 httpOnly: true,
                 secure: false,
-                sameSite: "lax",
+                sameSite: "None",
             }
         );
 

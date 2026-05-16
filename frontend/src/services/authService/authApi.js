@@ -12,7 +12,7 @@ const API = axios.create({
 export const patientRegister = async (patientData) => {
     try {
         const response = await API.post("/api/patient/patientRegister", patientData)
-        // console.log("Register patient data", response.data);
+        console.log("Register patient data", response.data);
         return response.data
     } catch (error) {
         console.error("Error during patient registration", error.response?.data || error.message);
@@ -23,6 +23,8 @@ export const patientRegister = async (patientData) => {
 export const patientLogin = async (patientData) => {
     try {
         const response = await API.post("/api/patient/patientLogin", patientData)
+        console.log("Patient login response", response.data);
+        // const response = await axios.post("https://appointmentbooking-mhku.onrender.com/api/patient/patientLogin", patientData, { withCredentials: true }   )
         return response.data
     } catch (error) {
         console.error("Error during patient login", error.response?.data || error.message);

@@ -56,7 +56,7 @@ export const signupPatient = async (req, res) => {
         res.cookie("patienttoken", token, {
             httpOnly: true,
             secure: false,
-            sameSite: "lax",
+            sameSite: "None",
             expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
         });
 
@@ -125,7 +125,7 @@ export const loginPatient = async (req, res) => {
         res.cookie("patienttoken", token, {
             httpOnly: true,
             secure: false,
-            sameSite: "lax",
+            sameSite: "None",
             expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
         });
 
@@ -509,7 +509,7 @@ export const patientLogout = async (req, res) => {
 
         res.clearCookie("patienttoken", {
             httpOnly: true,
-            sameSite: "lax",
+            sameSite: "None",
             secure: false
         });
 
