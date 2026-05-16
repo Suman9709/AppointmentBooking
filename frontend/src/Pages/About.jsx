@@ -5,19 +5,7 @@ import lab from '/image/lab.png'
 
 const About = () => {
   return (
-    <div className="
-      mt-8
-      mx-4 sm:mx-6 md:mx-10
-      my-6
-     
-     
-      flex
-      flex-col
-      lg:flex-row
-      gap-8
-      p-6
-      md:px-16
-    ">
+    <div className="mt-8 mx-4 sm:mx-6 md:mx-10 my-6 flex flex-collg:flex-row gap-8 p-6 md:px-16">
 
       {/* LEFT SECTION */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center gap-6">

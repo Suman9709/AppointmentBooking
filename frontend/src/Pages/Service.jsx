@@ -29,10 +29,10 @@ const Service = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <ServiceCard title="Massage Room" description="Lorem ipsum dolor sit amet." />
-                    <ServiceCard title="Physiotherapy" description="Lorem ipsum dolor sit amet." />
-                    <ServiceCard title="Dental Care" description="Lorem ipsum dolor sit amet." />
-                    <ServiceCard title="General Checkup" description="Lorem ipsum dolor sit amet." />
+                    <ServiceCard title="Massage Room" description="Lorem ipsum dolor sit amet." imageUrl={"https://cdn.pixabay.com/photo/2016/04/13/22/12/hands-1327811_1280.jpg"} />
+                    <ServiceCard title="Physiotherapy" description="Lorem ipsum dolor sit amet." imageUrl={"https://cdn.pixabay.com/photo/2020/10/04/01/37/physiotherapy-5624920_1280.jpg"} />
+                    <ServiceCard title="Dental Care" description="Lorem ipsum dolor sit amet." imageUrl={"https://cdn.pixabay.com/photo/2014/08/26/21/54/dentist-428646_1280.jpg"} />
+                    <ServiceCard title="General Checkup" description="Lorem ipsum dolor sit amet." imageUrl={"https://cdn.pixabay.com/photo/2026/03/14/02/39/tungart7-baby-10172896_1280.jpg"} />
                 </div>
             </div>
 
@@ -43,7 +43,7 @@ const Service = () => {
                     {/* Image */}
                     <div className="w-full lg:w-1/2">
                         <img
-                            src="https://via.placeholder.com/500x400"
+                            src="https://cdn.pixabay.com/photo/2016/11/08/05/29/operation-1807543_1280.jpg"
                             alt="Diagnostic equipment"
                             className="w-full h-64 sm:h-80 object-cover rounded-2xl"
                         />
