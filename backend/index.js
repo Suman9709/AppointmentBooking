@@ -20,14 +20,14 @@ connectDB();
 
 //middleware
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: "https://appointment-booking-omega-three.vercel.app",
     credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
 //routes
 app.use('/api/auth', authRouter)
-app.use('/api/adminaccess',  adminAccessRouter)
+app.use('/api/adminaccess', adminAccessRouter)
 app.use('/api/doctor', doctorRouter)
 app.use('/api/doctor/slots', sloutRouter)
 app.use('/api/patient', patientRouter)
