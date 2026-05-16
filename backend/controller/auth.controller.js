@@ -53,7 +53,7 @@ export const adminRegister = async (req,res) => {
             token,
             {
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 sameSite: "None",
 
                 expires: new Date(
@@ -163,7 +163,7 @@ export const adminLogin = async (req,res) => {
             token,
             {
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 sameSite: "None",
 
                 expires: new Date(
@@ -259,7 +259,7 @@ export const adminLogout = async (
             "admintoken",
             {
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 sameSite: "None",
             }
         );
