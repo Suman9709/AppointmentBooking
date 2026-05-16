@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-    baseURL: "http://localhost:5000/api/doctor/",
+    // baseURL: "http://localhost:5000/api/doctor/",
+    baseURL: "https://appointmentbooking-mhku.onrender.com",
     withCredentials: true,
 })
 
@@ -11,7 +12,7 @@ const API = axios.create({
 
 export const createSlot = async (slotData) => {
     try {
-        const response = await API.post("slots/create", slotData)
+        const response = await API.post("/api/doctor/slots/create", slotData)
         console.log("create slot response", response.data);
         return response.data
     } catch (error) {
@@ -23,7 +24,7 @@ export const createSlot = async (slotData) => {
 
 export const getAllSlots = async (doctorId) => {
     try {
-        const response = await API.get("/slots/allslots");
+        const response = await API.get(`/api/doctor/slots/allslots`);
         console.log("get all slots response", response.data);
         return response.data.slots
     } catch (error) {
@@ -36,7 +37,7 @@ export const getAllSlots = async (doctorId) => {
 
 export const deleteSlot = async(slotID)=>{
     try {
-        const response = await API.delete(`/slots/delete${slotID}`);
+        const response = await API.delete(`/api/doctor/slots/delete${slotID}`);
         console.log("delete slot response", response.data);
         return response.data;
     } catch (error) {

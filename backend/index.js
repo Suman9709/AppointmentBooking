@@ -20,7 +20,7 @@ connectDB();
 
 //middleware
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173" ||"https://appointmentbooking-mhku.onrender.com",
     credentials: true,
 }));
 app.use(express.json());
