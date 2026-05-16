@@ -5,10 +5,11 @@ import dotenv from 'dotenv';
 import authRouter from './router/auth.router.js';
 import cookieParser from 'cookie-parser';
 import doctorRouter from './router/doctor.router.js';
-import { isAdmin, verifyJWT } from './middleware/middleware.js';
+// import { verifyAdminJWT, verifyDoctorJWT, verifyPatientJWT } from './middleware/middleware.js';
 import adminAccessRouter from './router/adminAccess.router.js';
 import sloutRouter from './router/slot.router.js';
 import patientRouter from './router/patient.router.js';
+import departmentRouter from './router/department.router.js';
 
 dotenv.config();
 
@@ -19,19 +20,20 @@ connectDB();
 
 //middleware
 app.use(cors({
-    origin:"http://localhost:5173",
+    origin: "http://localhost:5173",
     credentials: true,
 }));
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 //routes
 app.use('/api/auth', authRouter)
-app.use('/api/adminaccess', verifyJWT, isAdmin, adminAccessRouter)
-app.use('/api/doctor', verifyJWT, doctorRouter)
-app.use('/api/doctor/slots', verifyJWT, sloutRouter)
+app.use('/api/adminaccess',  adminAccessRouter)
+app.use('/api/doctor', doctorRouter)
+app.use('/api/doctor/slots', sloutRouter)
 app.use('/api/patient', patientRouter)
+app.use('/api/department', departmentRouter)
 
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-})
+});

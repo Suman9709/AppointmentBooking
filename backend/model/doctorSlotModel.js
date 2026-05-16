@@ -3,65 +3,86 @@ import mongoose from "mongoose";
 const doctorSlotSchema = new mongoose.Schema({
     doctorId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Doctor',
+        ref: "Doctor",
         required: true
     },
-    departmentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Department',
-        required: true
-    },
+
     startDateTime: {
         type: Date,
         required: true,
     },
+
     endDateTime: {
         type: Date,
         required: true,
     },
-    isBooked: {
-        type: Boolean,
-        default: false,
-    },
+
     status: {
         type: String,
-        enum: ["AVAILABLE", "BOOKED", "CANCELLED"],
+        enum: [
+            "AVAILABLE",
+            "BOOKED",
+            "CANCELLED"
+        ],
         default: "AVAILABLE"
     },
+
 }, { timestamps: true });
 
-// 🔹 Index for performance
+
+// INDEXES
+
 doctorSlotSchema.index({
     doctorId: 1,
     startDateTime: 1,
+    endDateTime: 1,
 });
-doctorSlotSchema.index({ departmentId: 1, startDateTime: 1 });
 
-// 🔹 Validation
-doctorSlotSchema.pre("save", function (next) {
+
+// VALIDATION + OVERLAP CHECK
+
+doctorSlotSchema.pre("save", async function () {
+
+    // VALIDATE TIME
+
     if (this.startDateTime >= this.endDateTime) {
-        return next(new Error("Start time must be before end time"));
+        throw new Error(
+            "Start time must be before end time"
+        );
     }
-    next();
-});
 
+    // CHECK OVERLAP
 
-// prevent overlapping slots for the same doctor
+    const overlappingSlot =
+        await mongoose.models.DoctorSlot.findOne({
 
-doctorSlotSchema.pre('save', async function (next) {
-    const overlappingSlot = await mongoose.model('DoctorSlot').findOne({
-        doctorId: this.doctorId,
-        _id: { $ne: this._id },
-        startDateTime: { $lt: this.endDateTime },
-        endDateTime: { $gt: this.startDateTime }
-    });
+            doctorId: this.doctorId,
+
+            _id: { $ne: this._id },
+
+            startDateTime: {
+                $lt: this.endDateTime
+            },
+
+            endDateTime: {
+                $gt: this.startDateTime
+            }
+        });
 
     if (overlappingSlot) {
-        return next(new Error("Slot overlaps with an existing slot"));
+        throw new Error(
+            "Slot overlaps with an existing slot"
+        );
     }
+});
 
-    next();
-})
+// PREVENT MODEL RECOMPILATION
 
-const DoctorSlot = mongoose.model("DoctorSlot", doctorSlotSchema);
+const DoctorSlot =
+    mongoose.models.DoctorSlot ||
+    mongoose.model(
+        "DoctorSlot",
+        doctorSlotSchema
+    );
+
 export default DoctorSlot;

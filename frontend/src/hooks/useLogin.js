@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { patientLogin } from "../services/authService/authApi";
-import { useNavigate } from "react-router-dom";
-import { adminLogin } from "../services/authService/adminApi";
+// import { useMutation, useQueryClient } from "@tanstack/react-query";
+// import { patientLogin } from "../services/authService/authApi";
+// import { useNavigate } from "react-router-dom";
+// import { adminLogin } from "../services/authService/adminApi";
 
 // export const useLogin = () => {
 //     const navigate = useNavigate();
@@ -23,37 +23,89 @@ import { adminLogin } from "../services/authService/adminApi";
 // }
 
 
-export const useLogin = (role = 'PATIENT') => {
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+
+import { patientLogin } from "../services/authService/authApi";
+import { adminLogin } from "../services/authService/adminApi";
+import { doctorLogin } from "../services/authService/doctorApi";
+
+export const useLogin = (role = "PATIENT") => {
+
     const navigate = useNavigate();
+
     const queryClient = useQueryClient();
 
-    const loginFunction = role === 'ADMIN' ? adminLogin : patientLogin;
+    // ================= LOGIN FUNCTION =================
+
+    let loginFunction;
+
+    switch (role) {
+
+        case "ADMIN":
+            loginFunction = adminLogin;
+            break;
+
+        case "DOCTOR":
+            loginFunction = doctorLogin;
+            break;
+
+        case "PATIENT":
+        default:
+            loginFunction = patientLogin;
+            break;
+    }
 
     return useMutation({
+
         mutationFn: loginFunction,
-       onSuccess: async () => {
 
-    if (role === "ADMIN") {
+        onSuccess: async () => {
 
-        await queryClient.refetchQueries({
-            queryKey: ["adminProfile"]
-        });
+            // ================= ADMIN =================
 
-        navigate("/admindashboard");
+            if (role === "ADMIN") {
 
-    } else {
+                await queryClient.refetchQueries({
+                    queryKey: ["adminProfile"]
+                });
 
-        await queryClient.refetchQueries({
-            queryKey: ["patientProfile"]
-        });
+                navigate("/admindashboard");
+            }
 
-        navigate("/patientdashboard");
-    }
-},
-        refetchOnWindowFocus: false,
+            // ================= DOCTOR =================
+
+            else if (role === "DOCTOR") {
+
+                await queryClient.refetchQueries({
+                    queryKey: ["doctorProfile"]
+                });
+
+                navigate("/doctordashboard");
+            }
+
+            // ================= PATIENT =================
+
+            else {
+
+                await queryClient.refetchQueries({
+                    queryKey: ["patientProfile"]
+                });
+
+                navigate("/patientdashboard");
+            }
+        },
+
         retry: false,
+
+        refetchOnWindowFocus: false,
+
         onError: (error) => {
-            console.log("Login Failed", error.response?.data || error.message);
+
+            console.log(
+                "Login Failed",
+                error.response?.data || error.message
+            );
         }
-    })
-}
+    });
+};

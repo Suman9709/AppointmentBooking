@@ -10,8 +10,9 @@ import {
     signupPatient,
     updatePatientProfile
 } from "../controller/patient.controller.js";
+import { verifyPatientJWT } from "../middleware/middleware.js";
 
-import { verifyJWT } from "../middleware/middleware.js";
+// import { verifyJWT } from "../middleware/middleware.js";
 
 const patientRouter = express.Router();
 
@@ -23,21 +24,19 @@ patientRouter.post("/patientRegister", signupPatient);
 patientRouter.post("/patientLogin", loginPatient);
 
 // FIXED
-patientRouter.post("/patientlogout", patientLogout);
+patientRouter.post("/patientlogout", verifyPatientJWT, patientLogout);
 
 
 
 // ================= PROFILE =================
 
 patientRouter.get(
-    "/getPatientDetails",
-    verifyJWT,
+    "/getPatientDetails", verifyPatientJWT,
     getPatientProfile
 );
 
 patientRouter.put(
-    "/updatePatientProfile",
-    verifyJWT,
+    "/updatePatientProfile", verifyPatientJWT,
     updatePatientProfile
 );
 
@@ -47,19 +46,19 @@ patientRouter.put(
 
 patientRouter.post(
     "/bookAppointment",
-    verifyJWT,
+    verifyPatientJWT,
     bookAppointment
 );
 
 patientRouter.get(
-    "/getPatientAppointments",
-    verifyJWT,
+    "/getPatientAppointments", 
+    verifyPatientJWT,
     getPatientAppointments
 );
 
 patientRouter.delete(
     "/cancelAppointment/:appointmentId",
-    verifyJWT,
+    verifyPatientJWT,
     cancelAppointment
 );
 

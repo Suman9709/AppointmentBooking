@@ -13,7 +13,7 @@ const LoginPage = () => {
     const role =
         location.pathname === "/adminlogin"
             ? "ADMIN"
-            : location.pathname === "/doctor/login"
+            : location.pathname === "/doctorlogin"
                 ? "DOCTOR"
                 : "PATIENT";
 
@@ -40,7 +40,7 @@ const LoginPage = () => {
             >
 
                 <h1 className='text-xl sm:text-2xl md:text-3xl font-semibold'>
-                    {role} Login
+                    {role} LOGIN
                 </h1>
 
                 {/* EMAIL */}

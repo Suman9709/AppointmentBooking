@@ -12,6 +12,13 @@ export const doctorLogin = async (req, res) => {
         if (!user || user.role !== 'DOCTOR') {
             return res.status(400).json({ message: "Invalid credentials" });
         }
+
+        if (!user.isActive) {
+            return res.status(403).json({
+                success: false,
+                message: "Account is deactivated"
+            });
+        }
         const isPasswordMMatched = await user.comparePassword(password);
         if (!isPasswordMMatched) {
             return res.status(400).json({ message: "Invalid credentials" });
@@ -20,8 +27,10 @@ export const doctorLogin = async (req, res) => {
         console.log("doctor Login token: ", token);
         res.cookie("doctortoken", token, {
             httpOnly: true,
-            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //7 days
-        })
+            sameSite: "lax",
+            secure: false,
+            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
         res.status(200).json({
             success: true,
             data: {
@@ -37,27 +46,46 @@ export const doctorLogin = async (req, res) => {
 
 export const getDoctorProfile = async (req, res) => {
     try {
-        const loggedInUser = req.user;
-        if (!loggedInUser) {
-            return res.status(404).json({ message: "User not found, please login to view profile" });
-        }
-        res.status(200).json({
-            success: true,
-            data: {
-                loggedInUser
-            },
-            message: "Doctor profile fetched successfully",
-        })
-    } catch (error) {
 
+        const loggedinUser = req.user;
+
+        if (!req.user || req.user.role !== "DOCTOR") {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: loggedinUser,
+            message: "Doctor profile fetched successfully",
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
-}
+};
 
 export const updateDoctorProfile = async (req, res) => {
     try {
         const loggedInUser = req.user;
         if (!loggedInUser) {
             return res.status(404).json({ message: "User not found, please login to update profile" });
+        }
+
+        const doctorProfile = await Doctor.findOne({
+            userId: user._id
+        });
+
+        if (!doctorProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Doctor profile not found"
+            });
         }
         Object.keys(req.body).forEach((key) => { loggedInUser[key] = req.body[key] });
 
@@ -76,16 +104,22 @@ export const updateDoctorProfile = async (req, res) => {
 
 export const doctorLogout = async (req, res) => {
     try {
-        const token = req.cookies.doctortoken;
-        if (!token) {
-            return res.status(400).json({ message: "No token found" });
-        }
-        res.clearCookie("doctortoken");
-        res.status(200).json({
-            success: true,
-            message: "Doctor Logout successful",
-        })
-    } catch (error) {
 
+        res.clearCookie("doctortoken", {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Doctor logout successful",
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
-}
+};

@@ -1,205 +1,564 @@
 import mongoose from "mongoose";
+
+import Doctor from "../model/doctorModel.js";
 import DoctorSlot from "../model/doctorSlotModel.js";
 
-export const createSlot = async (req, res) => {
+
+
+// ================= CREATE SLOT =================
+
+
+export const createSlot = async (
+    req,
+    res
+) => {
+
     try {
+
         const user = req.user;
 
         if (!user) {
+
             return res.status(401).json({
-                message: "Unauthorized. Please login."
+                success: false,
+                message: "Unauthorized"
             });
         }
 
-        const { date, startTime, endTime } = req.body;
+        // FIND DOCTOR PROFILE
 
-        // 🔹 Basic validation
-        if (!date || !startTime || !endTime) {
+        const doctor =
+            await Doctor.findOne({
+                userId: user._id
+            });
+
+        if (!doctor) {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Doctor profile not found"
+            });
+        }
+
+        const {
+            date,
+            startTime,
+            endTime
+        } = req.body;
+
+        if (
+            !date ||
+            !startTime ||
+            !endTime
+        ) {
+
             return res.status(400).json({
-                message: "Date, startTime and endTime are required"
+                success: false,
+                message:
+                    "All fields are required"
             });
         }
 
-        // 🔹 Convert into proper DateTime (IMPORTANT FIX)
-        const slotStartDateTime = new Date(`${date}T${startTime}:00`);
-        const slotEndDateTime = new Date(`${date}T${endTime}:00`);
-        const now = new Date();
+        // CREATE DATETIME
 
-        // 🔹 Validate invalid date
-        if (isNaN(slotStartDateTime) || isNaN(slotEndDateTime)) {
+        const startDateTime =
+            new Date(
+                `${date}T${startTime}:00`
+            );
+
+        const endDateTime =
+            new Date(
+                `${date}T${endTime}:00`
+            );
+
+        // VALIDATION
+
+        if (
+            startDateTime >= endDateTime
+        ) {
+
             return res.status(400).json({
-                message: "Invalid date or time format"
+                success: false,
+                message:
+                    "Start time must be before end time"
             });
         }
 
-        // 🔹 Start must be before end
-        if (slotStartDateTime >= slotEndDateTime) {
-            return res.status(400).json({
-                message: "Start time must be earlier than end time"
-            });
-        }
+        // CHECK OVERLAP
 
-        // 🔹 Prevent past slot
-        if (slotStartDateTime < now) {
-            return res.status(400).json({
-                message: "Cannot create slot in the past"
-            });
-        }
+        const overlappingSlot =
+            await DoctorSlot.findOne({
 
-        // 🔹 Overlapping check (FIXED using DateTime)
-        const overlappingSlot = await DoctorSlot.findOne({
-            doctorId: user._id,
-            startDateTime: { $lt: slotEndDateTime },
-            endDateTime: { $gt: slotStartDateTime }
-        });
+                doctorId:
+                    doctor._id,
+
+                startDateTime: {
+                    $lt: endDateTime
+                },
+
+                endDateTime: {
+                    $gt: startDateTime
+                }
+            });
 
         if (overlappingSlot) {
+
             return res.status(400).json({
-                message: "Slot overlaps with an existing slot"
+                success: false,
+                message:
+                    "Slot overlaps with existing slot"
             });
         }
 
-        // 🔹 Create slot
-        const newSlot = new DoctorSlot({
-            doctorId: user._id,
-            date: new Date(date), // optional (for filtering by date)
-            startDateTime: slotStartDateTime,
-            endDateTime: slotEndDateTime
-        });
+        // CREATE SLOT
 
-        const savedSlot = await newSlot.save();
+        const slot =
+            await DoctorSlot.create({
+
+                doctorId:
+                    doctor._id,
+
+                startDateTime,
+
+                endDateTime
+            });
 
         return res.status(201).json({
-            message: "Slot created successfully",
-            slot: savedSlot
+
+            success: true,
+
+            message:
+                "Slot created successfully",
+
+            slot
         });
 
     } catch (error) {
+
         return res.status(500).json({
-            message: "Error creating slot",
+
+            success: false,
+
+            message:
+                error.message
+        });
+    }
+};
+
+
+
+// ================= GET ALL DOCTOR SLOTS =================
+
+export const getAllSlots = async (req,res) => {
+
+    try {
+
+        const user = req.user;
+
+        if (!user) {
+
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        const doctor =
+            await Doctor.findOne({
+                userId: user._id
+            });
+
+        if (!doctor) {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Doctor profile not found"
+            });
+        }
+
+
+        const currentDateTime = new Date();
+        const slots =
+            await DoctorSlot.find({
+
+                doctorId: doctor._id,
+                endDateTime:{
+                    $gte: currentDateTime
+                }
+
+            }).sort({
+                startDateTime: 1
+            });
+
+        return res.status(200).json({
+
+            success: true,
+
+            slots
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Error fetching slots",
+
             error: error.message
         });
     }
 };
 
-export const getAllSlots = async (req, res) => {
+
+
+// ================= GET SLOT BY ID =================
+
+export const getSlotById = async (
+    req,
+    res
+) => {
+
     try {
-        const loggedInUser = req.user;
-        if (!loggedInUser) {
-            return res.status(404).json({ message: "User not found, please login to view slots" });
-        }
-        const slots = await DoctorSlot.find({ doctorId: loggedInUser._id });
-        return res.status(200).json({ slots });
 
-    } catch (error) {
-        return res.status(500).json({ message: "Error fetching slots", error: error.message });
-    }
-}
+        const user = req.user;
 
+        const { id } = req.params;
 
-export const getSlotById = async (req, res) => {
-    try {
-        const loggedInUser = req.user;
-        if (!loggedInUser) {
-            return res.status(404).json({ message: "User not found, please login to view slot" });
-        }
+        if (
+            !mongoose.Types.ObjectId.isValid(id)
+        ) {
 
-        const slotId = req.params.id;
-        const slot = await DoctorSlot.findOne({ _id: slotId, doctorId: loggedInUser._id }).lean();
-        if (!slot) {
-            return res.status(404).json({ message: "Slot not found" });
-        }
-        return res.status(200).json({ slot });
-
-    } catch (error) {
-        return res.status(500).json({ message: "Error fetching slot", error: error.message });
-    }
-}
-
-export const updateSlotById = async (req, res) => {
-    try {
-        const loggedInUser = req.user;
-        if (!loggedInUser) {
-            return res.status(404).json({ message: "User not found, please login to update slot" });
-        }
-        const slotId = req.params.id;
-
-        if (!mongoose.Types.ObjectId.isValid(slotId)) {
-            return res.status(400).json({ message: "Invalid slot ID" });
-        }
-
-        const { startTime, endTime, date } = req.body;
-
-        if (!date && !startTime && !endTime) {
             return res.status(400).json({
-                message: "At least one field is required to update"
+                success: false,
+                message: "Invalid slot ID"
             });
         }
 
+        const doctor =
+            await Doctor.findOne({
+                userId: user._id
+            });
 
-        if (startTime && endTime && startTime >= endTime) {
-            return res.status(400).json({ message: "Start time must be earlier than end time" });
-        }
+        const slot =
+            await DoctorSlot.findOne({
 
-        //fetch existing slot to be updated
-        const slot = await DoctorSlot.findOne({ _id: slotId, doctorId: loggedInUser._id });
+                _id: id,
+
+                doctorId: doctor._id
+
+            });
+
         if (!slot) {
-            return res.status(404).json({ message: "Slot not found" });
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "Slot not found"
+            });
         }
-        // Object.keys(req.body).forEach((key) => { slot[key] = req.body[key]; });
 
+        return res.status(200).json({
 
-        // Date validation
-        if (date) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            success: true,
 
-            const slotDate = new Date(date);
-            slotDate.setHours(0, 0, 0, 0);
-
-            if (slotDate < today) {
-                return res.status(400).json({
-                    message: "Cannot update slot to a past date"
-                });
-            }
-        }
-        //Over lapping slot check
-        const overlappingSlot = await DoctorSlot.findOne({
-            _id: { $ne: slotId },
-            doctorId: loggedInUser._id,
-            date: date || slot.date,
-            startTime: { $lt: endTime || slot.endTime },
-            endTime: { $gt: startTime || slot.startTime }
+            slot
         });
 
-        if (overlappingSlot) {
+    } catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Error fetching slot",
+
+            error: error.message
+        });
+    }
+};
+
+
+
+// ================= UPDATE SLOT =================
+
+export const updateSlotById = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const user = req.user;
+
+        const { id } = req.params;
+
+        const {
+            date,
+            startTime,
+            endTime
+        } = req.body;
+
+        if (
+            !mongoose.Types.ObjectId.isValid(id)
+        ) {
+
             return res.status(400).json({
-                message: "Updated slot overlaps with an existing slot"
+                success: false,
+                message: "Invalid slot ID"
             });
         }
-        if (date) slot.date = date;
-        if (startTime) slot.startTime = startTime;
-        if (endTime) slot.endTime = endTime;
 
-        const updatedSlot = await slot.save();
-        return res.status(200).json({ message: "Slot updated successfully", slot: updatedSlot });
-    } catch (error) {
-        return res.status(500).json({ message: "Error updating slot", error: error.message });
-    }
-}
-export const deleteSlotById = async (req, res) => {
-    try {
-        const loggedInUser = req.user;
-        if (!loggedInUser) {
-            return res.status(404).json({ message: "User not found, please login to delete slot" });
-        }
-        const slotId = req.params.id;
-        const slot = await DoctorSlot.findOneAndDelete({ _id: slotId, doctorId: loggedInUser._id });
+        const doctor =
+            await Doctor.findOne({
+                userId: user._id
+            });
+
+        const slot =
+            await DoctorSlot.findOne({
+
+                _id: id,
+
+                doctorId: doctor._id
+            });
+
         if (!slot) {
-            return res.status(404).json({ message: "Slot not found" });
+
+            return res.status(404).json({
+                success: false,
+                message: "Slot not found"
+            });
         }
-        return res.status(200).json({ message: "Slot deleted successfully" });
+
+        // BUILD DATETIME
+
+        const updatedStart =
+            startTime
+                ? new Date(
+                    `${date}T${startTime}:00`
+                )
+                : slot.startDateTime;
+
+        const updatedEnd =
+            endTime
+                ? new Date(
+                    `${date}T${endTime}:00`
+                )
+                : slot.endDateTime;
+
+        // VALIDATION
+
+        if (updatedStart >= updatedEnd) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Start time must be before end time"
+            });
+        }
+
+        // OVERLAP CHECK
+
+        const overlappingSlot =
+            await DoctorSlot.findOne({
+
+                _id: { $ne: id },
+
+                doctorId: doctor._id,
+
+                startDateTime: {
+                    $lt: updatedEnd
+                },
+
+                endDateTime: {
+                    $gt: updatedStart
+                }
+            });
+
+        if (overlappingSlot) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Updated slot overlaps"
+            });
+        }
+
+        slot.startDateTime =
+            updatedStart;
+
+        slot.endDateTime =
+            updatedEnd;
+
+        const updatedSlot =
+            await slot.save();
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "Slot updated successfully",
+
+            slot: updatedSlot
+        });
+
     } catch (error) {
-        return res.status(500).json({ message: "Error deleting slot", error: error.message });
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Error updating slot",
+
+            error: error.message
+        });
     }
-}
+};
+
+
+
+// ================= DELETE SLOT =================
+
+export const deleteSlotById = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const user = req.user;
+
+        const { id } = req.params;
+
+        const doctor =
+            await Doctor.findOne({
+                userId: user._id
+            });
+
+        const slot =
+            await DoctorSlot.findOneAndDelete({
+
+                _id: id,
+
+                doctorId: doctor._id
+            });
+
+        if (!slot) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "Slot not found"
+            });
+        }
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "Slot deleted successfully"
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Error deleting slot",
+
+            error: error.message
+        });
+    }
+};
+
+
+
+// ================= GET SLOTS BY DEPARTMENT =================
+
+export const getSlotByDepartment =
+    async (req, res) => {
+
+        try {
+
+            const {
+                departmentId
+            } = req.params;
+
+            // FIND DOCTORS
+
+            const doctors =
+                await Doctor.find({
+
+                    departmentId
+
+                });
+
+            const doctorIds =
+                doctors.map(
+                    doctor => doctor._id
+                );
+
+            // FIND AVAILABLE SLOTS
+
+
+            const currentDateTime = new Date();
+            const slots =
+                await DoctorSlot.find({
+                    doctorId: {
+                    $in: doctorIds
+                    },
+                    endDateTime: {
+                    $gte: currentDateTime,
+                    },
+                    status: "AVAILABLE"
+                }).populate({
+
+                    path: "doctorId",
+
+                    populate: [
+                        {
+                            path: "userId",
+                            select: "name email"
+                        },
+                        {
+                            path: "departmentId",
+                            select: "name"
+                        }
+                    ]
+                }).sort({
+                    startDateTime: 1
+                });
+
+            return res.status(200).json({
+                success: true,
+                slots
+            });
+
+        } catch (error) {
+
+            return res.status(500).json({
+
+                success: false,
+
+                message:
+                    "Error fetching slots",
+
+                error: error.message
+            });
+        }
+    };

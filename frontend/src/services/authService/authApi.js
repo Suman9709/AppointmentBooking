@@ -2,7 +2,7 @@ import axios from "axios";
 
 
 const API = axios.create({
-    baseURL: "http://localhost:5000/api/patient",
+    baseURL: "http://localhost:5000",
     withCredentials: true,
 })
 // const API_URL = "http://localhost:5000/api/patient";
@@ -11,7 +11,7 @@ const API = axios.create({
 
 export const patientRegister = async (patientData) => {
     try {
-        const response = await API.post("/patientRegister", patientData)
+        const response = await API.post("/api/patient/patientRegister", patientData)
         // console.log("Register patient data", response.data);
         return response.data
     } catch (error) {
@@ -22,7 +22,7 @@ export const patientRegister = async (patientData) => {
 
 export const patientLogin = async (patientData) => {
     try {
-        const response = await API.post("/patientLogin", patientData)
+        const response = await API.post("/api/patient/patientLogin", patientData)
         return response.data
     } catch (error) {
         console.error("Error during patient login", error.response?.data || error.message);
@@ -33,7 +33,7 @@ export const patientLogin = async (patientData) => {
 
 export const logout = async () => {
     try {
-        const response = await API.post("/patientlogout")
+        const response = await API.post("/api/patient/patientlogout")
         return response.data
     } catch (error) {
         console.error("Error during patient logout", error);

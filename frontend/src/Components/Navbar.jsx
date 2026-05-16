@@ -6,6 +6,7 @@ import { useAdmin } from '../hooks/useAdmin'
 // import { useDoctor } from '../hooks/useDoctor'
 
 import { useLogout } from '../hooks/useLogout'
+import { useDoctor } from '../hooks/useDoctor'
 
 const Navbar = () => {
 
@@ -17,7 +18,7 @@ const Navbar = () => {
 
   // const { data: doctorData } = useDoctor()
 
-
+const {data: doctorData} = useDoctor()
 
   // ================= USER DATA =================
 
@@ -29,10 +30,10 @@ const admin =
 
 
 
-  // const doctor =
-  //   doctorData?.data?.user || null
+  const doctor =
+    doctorData?.data || null
 
-  const doctor = null
+  
 
 
 
@@ -165,7 +166,7 @@ const loggedInUser = useMemo(() => {
 
     <div className="w-full px-4 mt-6">
 
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-2 md:px-8 border border-gray-200 rounded-full bg-gradient-to-r from-white via-sky-100 via-70% to-white backdrop-blur-xl shadow-md">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-2 md:px-8 border border-gray-200 rounded-full bg-linear-to-r from-white via-sky-100 via-70% to-white backdrop-blur-xl shadow-md">
 
         {/* ================= LOGO ================= */}
 
@@ -279,7 +280,7 @@ const loggedInUser = useMemo(() => {
 
           {ismobilemenu && (
 
-            <div className="absolute right-0 top-12 bg-white shadow-xl rounded-xl p-4 flex flex-col gap-4 min-w-[220px] z-50">
+            <div className="absolute right-0 top-12 bg-white shadow-xl rounded-xl p-4 flex flex-col gap-4 min-w-55 z-50">
 
               {menuToShow.map((menuItem) => (
 

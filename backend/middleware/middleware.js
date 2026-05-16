@@ -1,71 +1,81 @@
 import jwt from "jsonwebtoken";
 import User from "../model/userModel.js";
 
-export const verifyJWT = async (
-    req,
-    res,
-    next
-) => {
+
+// export const verifyJWT = async (req, res, next) => {
+//     try {
+
+//         const token = req.cookies.token;
+
+//         if (!token) {
+//             return res.status(401).json({
+//                 success: false,
+//                 message: "Unauthorized"
+//             });
+//         }
+
+//         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+//         const user = await User.findById(decoded.userId).select("-password");
+
+//         if (!user) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "User not found"
+//             });
+//         }
+
+//         if (!user.isActive) {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: "Account disabled"
+//             });
+//         }
+
+//         req.user = {
+//             _id: user._id,
+//             name: user.name,
+//             email: user.email,
+//             role: decoded.role
+//         };
+
+//         next();
+
+//     } catch (error) {
+//         return res.status(401).json({
+//             success: false,
+//             message: "Invalid token"
+//         });
+//     }
+// };
+
+
+
+export const verifyAdminJWT = async (req, res, next) => {
     try {
 
-        // TOKENS
-
-        const adminToken = req.cookies.admintoken;
-
-        const doctorToken =req.cookies.doctortoken;
-
-        const patientToken =req.cookies.patienttoken;
-
-
-        // PICK TOKEN
-
-        const token =
-            adminToken ||
-            doctorToken ||
-            patientToken;
+        const token = req.cookies.admintoken;
 
         if (!token) {
             return res.status(401).json({
                 success: false,
-                message:
-                    "Unauthorized, no token",
+                message: "Admin unauthorized"
             });
         }
-
-
-        // VERIFY TOKEN
 
         const decoded = jwt.verify(
             token,
             process.env.JWT_SECRET
         );
 
+        const user = await User.findById(decoded.userId);
 
-        // FIND USER
-
-        const user = await User.findById(decoded.userId).select("-password");
-
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
-
-
-        // CHECK ACTIVE
-
-        if (!user.isActive) {
+        if (!user || user.role !== "ADMIN") {
             return res.status(403).json({
                 success: false,
-                message:
-                    "User account is deactivated",
+                message: "Access denied"
             });
         }
-
-
-        // STORE USER
 
         req.user = user;
 
@@ -73,78 +83,69 @@ export const verifyJWT = async (
 
     } catch (error) {
 
-        console.log(error);
-
         return res.status(401).json({
             success: false,
-            message:
-                "Unauthorized, invalid token",
+            message: "Invalid admin token"
         });
     }
 };
 
 
+export const verifyDoctorJWT = async (req, res, next) => {
+    try {
+        const token = req.cookies.doctortoken;
 
-// ================= ADMIN =================
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: "Doctor unauthorized"
+            });
+        }
 
-export const isAdmin = (
-    req,
-    res,
-    next
-) => {
 
-    if (req.user.role !== "ADMIN") {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.userId);
 
-        return res.status(403).json({
+        if (!user || user.role !== "DOCTOR") {
+            return res.status(403).json({
+                success: false,
+                message: "Access denied"
+            });
+        }
+        req.user = user;
+        next();
+    } catch (error) {
+        return res.status(401).json({
             success: false,
-            message:
-                "Admin access required",
+            message: "Invalid doctor token"
         });
     }
+}
 
-    next();
-};
+export const verifyPatientJWT = async (req, res, next) => {
+    try {
+        const token = req.cookies.patienttoken;
 
-
-
-// ================= DOCTOR =================
-
-export const isDoctor = (
-    req,
-    res,
-    next
-) => {
-
-    if (req.user.role !== "DOCTOR") {
-
-        return res.status(403).json({
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: "Patient unauthorized"
+            });
+        }
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.userId);
+        if (!user || user.role !== "PATIENT") {
+            return res.status(403).json({
+                success: false,
+                message: "Access denied"
+            });
+        }
+        req.user = user;
+        next();
+    } catch (error) {
+        return res.status(401).json({
             success: false,
-            message:
-                "Doctor access required",
+            message: "Invalid patient token"
         });
     }
-
-    next();
-};
-
-
-
-// ================= PATIENT =================
-
-export const isPatient = (
-    req,
-    res,
-    next
-) => {
-
-    if (req.user.role !== "PATIENT") {
-
-        return res.status(403).json({
-            success: false,
-            message:
-                "Patient access required",
-        });
-    }
-
-    next();
-};
+}
