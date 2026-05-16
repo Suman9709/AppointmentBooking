@@ -136,7 +136,7 @@ const Home = () => {
 
       <About />
       <Service />
-      <AppointmentPage />
+      {/* <AppointmentPage /> */}
 
     </div>
   )

@@ -18,28 +18,23 @@ const Navbar = () => {
 
   // const { data: doctorData } = useDoctor()
 
-const {data: doctorData} = useDoctor()
+  const { data: doctorData } = useDoctor()
 
   // ================= USER DATA =================
 
-const patient =
-  patientData?.user || null
+  const patient =
+    patientData?.user || null
 
-const admin =
-  adminData?.data || null
+  const admin =
+    adminData?.data || null
 
 
 
   const doctor =
-    doctorData?.data || null
+    doctorData?.data?.loggedinUser || null
 
-  
-
-
-
-  // ================= LOGGED USER =================
-
- 
+  // const doctorProfile =
+  //   doctorData?.data?.doctorProfile || null
 
 
 
@@ -47,40 +42,40 @@ const admin =
 
   const role = useMemo(() => {
 
-  if (admin?.role === "ADMIN") {
-    return "ADMIN"
-  }
+    if (admin?.role === "ADMIN") {
+      return "ADMIN"
+    }
 
-  if (doctor?.role === "DOCTOR") {
-    return "DOCTOR"
-  }
+    if (doctor?.role === "DOCTOR") {
+      return "DOCTOR"
+    }
 
-  if (patient?.role === "PATIENT") {
-    return "PATIENT"
-  }
+    if (patient?.role === "PATIENT") {
+      return "PATIENT"
+    }
 
-  return null
+    return null
 
-}, [admin, doctor, patient])
+  }, [admin, doctor, patient])
 
-const loggedInUser = useMemo(() => {
+  const loggedInUser = useMemo(() => {
 
-  switch (role) {
+    switch (role) {
 
-    case "ADMIN":
-      return admin
+      case "ADMIN":
+        return admin
 
-    case "DOCTOR":
-      return doctor
+      case "DOCTOR":
+        return doctor
 
-    case "PATIENT":
-      return patient
+      case "PATIENT":
+        return patient
 
-    default:
-      return null
-  }
+      default:
+        return null
+    }
 
-}, [role, admin, doctor, patient])
+  }, [role, admin, doctor, patient])
 
   // ================= LOGOUT =================
 
@@ -113,9 +108,9 @@ const loggedInUser = useMemo(() => {
     patient: [
       { name: 'Home', link: '/' },
       { name: 'Dashboard', link: '/patientdashboard' },
-      { name: 'Book Appointment', link: '/bookappointment' },
-      { name: 'My Doctors', link: '/mydoctors' },
-      { name: 'My Appointments', link: '/myappointments' },
+      // { name: 'Book Appointment', link: '/bookappointment' },
+      // { name: 'My Doctors', link: '/mydoctors' },
+      { name: 'My Appointments', link: '/patientdashboard#myappointments' },
     ]
   }
 
@@ -146,21 +141,12 @@ const loggedInUser = useMemo(() => {
   // ================= AVATAR =================
 
   const avatarLetter = useMemo(() => {
-
-    return loggedInUser?.name
-      ?.charAt(0)
-      ?.toUpperCase()
-
+    return loggedInUser?.name?.charAt(0)?.toUpperCase()
   }, [loggedInUser])
-
-
 
   // ================= MOBILE MENU =================
 
-  const [ismobilemenu, setIsmobilemenu] =
-    useState(false)
-
-
+  const [ismobilemenu, setIsmobilemenu] = useState(false)
 
   return (
 
@@ -189,16 +175,13 @@ const loggedInUser = useMemo(() => {
             <Link
               key={menuItem.name}
               to={menuItem.link}
-              className="hover:text-sky-600 transition duration-200"
-            >
+              className="hover:text-sky-600 transition duration-200">
               {menuItem.name}
             </Link>
 
           ))}
 
         </div>
-
-
 
         {/* ================= RIGHT SECTION ================= */}
 
@@ -216,16 +199,13 @@ const loggedInUser = useMemo(() => {
 
           )}
 
-
-
           {loggedInUser ? (
 
             <button
               onClick={() =>
                 logoutMutation.mutate(role)
               }
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200 cursor-pointer"
-            >
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200 cursor-pointer">
               Logout
             </button>
 
@@ -233,8 +213,7 @@ const loggedInUser = useMemo(() => {
 
             <Link
               to="/login"
-              className="font-medium hover:text-sky-600 transition duration-200"
-            >
+              className="font-medium hover:text-sky-600 transition duration-200">
               Login
             </Link>
 
@@ -271,11 +250,7 @@ const loggedInUser = useMemo(() => {
               />
 
             )}
-
           </button>
-
-
-
           {/* ================= MOBILE DROPDOWN ================= */}
 
           {ismobilemenu && (
@@ -290,61 +265,43 @@ const loggedInUser = useMemo(() => {
                   onClick={() =>
                     setIsmobilemenu(false)
                   }
-                  className="hover:text-sky-600 transition"
-                >
+                  className="hover:text-sky-600 transition">
                   {menuItem.name}
                 </Link>
 
               ))}
-
-
-
               {loggedInUser ? (
-
                 <>
-
                   <p className="font-semibold text-sky-700">
-
                     {
                       loggedInUser?.name
                         ?.split(" ")[0]
                     }
-
                   </p>
 
                   <button
                     onClick={() =>
                       logoutMutation.mutate(role)
                     }
-                    className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition"
-                  >
+                    className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition">
                     Logout
                   </button>
 
                 </>
-
               ) : (
-
                 <Link
                   to="/login"
                   onClick={() =>
                     setIsmobilemenu(false)
                   }
-                  className="hover:text-sky-600 transition"
-                >
+                  className="hover:text-sky-600 transition">
                   Login
                 </Link>
-
               )}
-
             </div>
-
           )}
-
         </div>
-
       </div>
-
     </div>
   )
 }

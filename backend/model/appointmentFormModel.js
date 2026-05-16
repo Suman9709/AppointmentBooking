@@ -14,6 +14,10 @@ const appointmentFormSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
+    doctorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Doctor"
+    },
 
     status: {
         type: String,

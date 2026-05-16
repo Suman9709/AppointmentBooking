@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import ProfileCard from "../../Components/ProfileCard";
 import AppointmentCard from "../../Components/AppointmentCard";
 import { usePatient } from "../../hooks/usePatient";
+import AppointmentBookingForm from "../../Components/AppointmentBookingForm";
+import { useMyAppointment } from "../../hooks/useMyAppointment";
 
 const PatientDashboard = () => {
+
+    const [showBookingForm, setShowBookingForm] = useState(false);
 
     const {
         data,
@@ -14,6 +18,9 @@ const PatientDashboard = () => {
     // backend response
     const patient = data?.user;
     const patientProfile = data?.patientProfile;
+
+
+    const { data: myAppointment } = useMyAppointment();
 
     // LOADING
 
@@ -47,12 +54,22 @@ const PatientDashboard = () => {
 
             {/* TITLE */}
 
-            <h1 className="text-3xl font-semibold text-gray-800">
+            {/* HEADER */}
 
-                Patient Dashboard
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-            </h1>
+                <h1 className="text-3xl font-semibold text-gray-800">
+                    Patient Dashboard
+                </h1>
 
+                <button
+                    onClick={() => setShowBookingForm(true)}
+                    className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-xl shadow-md transition duration-300 font-medium"
+                >
+                    Book Appointment
+                </button>
+
+            </div>
 
             {/* PROFILE */}
 
@@ -74,58 +91,120 @@ const PatientDashboard = () => {
 
             />
 
+            {/* MY APPOINTMENTS */}
 
-            {/* UPCOMING */}
-
-            <div className="flex flex-col gap-4">
+            <section  id="myappointments" className="flex flex-col gap-4">
 
                 <h2 className="text-2xl font-semibold text-gray-700">
 
-                    Upcoming Appointments
+                    My Appointments
 
                 </h2>
 
                 <div className="flex flex-wrap gap-4">
 
-                    <AppointmentCard
-                        doctor="Dr. Sarah Smith"
-                        date="10 June 2026"
-                        time="10:30 AM"
-                        status="Upcoming"
-                    />
+                    {myAppointment?.data?.length > 0 ? (
 
-                    <AppointmentCard
-                        doctor="Dr. Michael Brown"
-                        date="15 June 2026"
-                        time="12:00 PM"
-                        status="Upcoming"
-                    />
+                        myAppointment.data.map((appointment) => (
+
+                            <AppointmentCard
+
+                                key={appointment._id}
+
+                                doctor={
+                                    appointment.doctorId?.userId?.name
+                                    || "Doctor"
+                                }
+
+                                date={
+                                    appointment.slotId?.startDateTime
+                                        ? new Date(
+                                            appointment.slotId.startDateTime
+                                        ).toLocaleDateString()
+                                        : "No Slot"
+                                }
+
+                                time={
+                                    appointment.slotId?.startDateTime
+                                        ? new Date(
+                                            appointment.slotId.startDateTime
+                                        ).toLocaleTimeString([], {
+
+                                            hour: "2-digit",
+
+                                            minute: "2-digit",
+                                        })
+                                        : "--"
+                                }
+
+                                status={appointment.status}
+
+                            />
+
+                        ))
+
+                    ) : (
+
+                        <div className="w-full bg-white rounded-2xl p-6 shadow text-center">
+
+                            <p className="text-gray-500">
+
+                                No appointments booked yet
+
+                            </p>
+
+                        </div>
+                    )}
 
                 </div>
-            </div>
+
+            </section>
 
 
-            {/* PAST */}
+            {/* BOOK APPOINTMENT MODAL */}
 
-            <div className="flex flex-col gap-4">
+            {showBookingForm && (
 
-                <h2 className="text-2xl font-semibold text-gray-700">
+                <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 ">
 
-                    Past Appointments
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto relative p-2 overflow-scroll:hidden">
+                        {/* CLOSE BUTTON */}
 
-                </h2>
+                        <button
+                            onClick={() => setShowBookingForm(false)}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl font-bold"
+                        >
+                            ×
+                        </button>
 
-                <div className="flex flex-wrap gap-4">
+                        <AppointmentBookingForm
 
-                    <AppointmentCard
-                        doctor="Dr. John Watson"
-                        date="01 May 2026"
-                        time="11:00 AM"
-                        status="Completed"
-                    />
+                            patient={{
+                                name: patient?.name,
+                                fatherName: patientProfile?.parentName,
+                                contactNumber: patientProfile?.contact,
+                                address: patientProfile?.address,
+                            }}
+
+                            // departments={[]}
+
+                            slots={[]}
+
+                            loading={false}
+
+                            onSubmit={(data) => {
+
+                                console.log("Appointment Data", data);
+
+                                setShowBookingForm(false);
+                            }}
+                        />
+
+                    </div>
 
                 </div>
-            </div>
+
+            )}
 
         </div>
     );

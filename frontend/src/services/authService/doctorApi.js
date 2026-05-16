@@ -2,7 +2,7 @@ import axios from "axios";
 
 
 const DOCTOR_API = axios.create({
-    baseURL: "http://localhost:5000/api/doctor",
+    baseURL: "http://localhost:5000",
     withCredentials: true,
 })
 

@@ -24,6 +24,7 @@ export const adminLogin = async (adminData) => {
 export const adminProfile = async () => {
     try {
         const response = await ADMIN_API.get("/api/auth/getAdminProfile");
+        console.log("admin profile",response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching admin profile", error.response?.data || error.message);
@@ -45,6 +46,7 @@ export const adminLogout = async () => {
 export const getALlDoctors = async()=>{
     try {
         const response = await ADMIN_API.get("/api/adminaccess/getall/doctors");
+        console.log("All Doctors", response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching all doctors", error.response?.data || error.message);
@@ -56,6 +58,7 @@ export const getALlDoctors = async()=>{
 export const createDoctor = async(doctorData)=>{
     try {
         const response = await ADMIN_API.post("/api/adminaccess/create/doctor", doctorData);
+        console.log("Doctor created", response.data);
         return response.data;
     } catch (error) {
         console.error("Error creating doctor", error.response?.data || error.message);
@@ -66,6 +69,7 @@ export const createDoctor = async(doctorData)=>{
 export const createDepartment = async(departmentData)=>{
     try {
         const response = await ADMIN_API.post("/api/department/createDepartment", departmentData);
+        console.log("Department created", response.data);
         return response.data;
     } catch (error) {
         console.error("Error creating department", error.response?.data || error.message);

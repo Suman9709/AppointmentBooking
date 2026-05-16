@@ -150,7 +150,7 @@ export const createSlot = async (
 
 // ================= GET ALL DOCTOR SLOTS =================
 
-export const getAllSlots = async (req,res) => {
+export const getAllSlots = async (req, res) => {
 
     try {
 
@@ -184,7 +184,7 @@ export const getAllSlots = async (req,res) => {
             await DoctorSlot.find({
 
                 doctorId: doctor._id,
-                endDateTime:{
+                endDateTime: {
                     $gte: currentDateTime
                 }
 
@@ -520,10 +520,10 @@ export const getSlotByDepartment =
             const slots =
                 await DoctorSlot.find({
                     doctorId: {
-                    $in: doctorIds
+                        $in: doctorIds
                     },
                     endDateTime: {
-                    $gte: currentDateTime,
+                        $gte: currentDateTime,
                     },
                     status: "AVAILABLE"
                 }).populate({
@@ -562,3 +562,7 @@ export const getSlotByDepartment =
             });
         }
     };
+
+
+
+

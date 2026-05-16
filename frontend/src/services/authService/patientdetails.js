@@ -17,6 +17,7 @@ export const patientProfile = async () => {
 export const getAllDepartments = async () => {
     try {
         const response = await API.get("/api/department/getalldepartments");
+        console.log("All Departments", response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching all departments", error.response?.data || error.message);
@@ -26,7 +27,7 @@ export const getAllDepartments = async () => {
 
 export const doctorGetSlotByDepartment = async (departmentId) => {
     try {
-        const response = await DOCTOR_API.get(`/api/doctor/slots/slotbydepartment/${departmentId}`);
+        const response = await API.get(`/api/doctor/slots/slotbydepartment/${departmentId}`);
         return response.data;
     } catch (error) {
         console.error("Error fetching slots by department", error.response?.data || error.message);

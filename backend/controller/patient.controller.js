@@ -1,4 +1,5 @@
 import AppointmentForm from "../model/appointmentFormModel.js";
+import DoctorSlot from "../model/doctorSlotModel.js";
 import Patient from "../model/PatientModel.js";
 import User from "../model/userModel.js";
 
@@ -216,105 +217,283 @@ export const updatePatientProfile = async (req, res) => {
 }
 
 export const bookAppointment = async (req, res) => {
-    try {
-        const loggedInUser = req.user;
-        if (!loggedInUser) {
-            return res.status(404).json({ message: "User not found, please login to book appointment" });
-        }
-        const { doctorId, appointmentDate, appointmentTime, reasonForVisit } = req.body;
 
-        if (!doctorId || !appointmentDate || !appointmentTime || !reasonForVisit) {
-            return res.status(400).json({ message: "All fields are required to book an appointment" });
+    try {
+
+        const loggedInUser = req.user;
+
+        if (!loggedInUser) {
+
+            return res.status(401).json({
+
+                success: false,
+                message:
+                    "Please login to book appointment"
+            });
         }
-        const newAppointment = await AppointmentForm.create({
-            patientId: loggedInUser._id,
-            doctorId,
-            appointmentDate,
-            appointmentTime,
-            reasonForVisit,
-            status: "Scheduled"
-        });
-        res.status(201).json({
+
+        const {
+            slotId,
+            doctorId
+        } = req.body;
+
+        if (!slotId || !doctorId) {
+
+            return res.status(400).json({
+
+                success: false,
+                message:
+                    "Slot and doctor are required"
+            });
+        }
+
+        // CHECK SLOT ALREADY BOOKED
+
+        const alreadyBooked =
+            await AppointmentForm.findOne({
+                slotId
+            });
+
+        if (alreadyBooked) {
+
+            return res.status(400).json({
+
+                success: false,
+                message:
+                    "Slot already booked"
+            });
+        }
+
+        const slot =
+            await DoctorSlot.findById(slotId);
+
+        if (!slot) {
+
+            return res.status(404).json({
+
+                message:
+                    "Slot not found"
+            });
+        }
+
+
+        if (slot.status === "BOOKED") {
+
+            return res.status(400).json({
+
+                message:
+                    "Slot already booked"
+            });
+        }
+
+
+        // CREATE APPOINTMENT
+
+        const newAppointment =
+            await AppointmentForm.create({
+
+                slotId,
+
+                patientId:
+                    loggedInUser._id,
+
+                doctorId,
+
+                status: "confirmed"
+            });
+
+        // UPDATE SLOT STATUS
+
+        slot.status = "BOOKED";
+
+        await slot.save();
+
+
+        return res.status(201).json({
+
             success: true,
-            data: {
-                newAppointment
-            },
-            message: "Appointment booked successfully",
-        })
+
+            data: newAppointment,
+
+            message:
+                "Appointment booked successfully"
+        });
+
     } catch (error) {
-        return res.status(500).json({ message: "Server Error" + error.message });
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Server Error " + error.message
+        });
     }
-}
+};
 
 export const getPatientAppointments = async (req, res) => {
+
     try {
+
         const loggedInUser = req.user;
+
         if (!loggedInUser) {
-            return res.status(404).json({ message: "User not found, please login to view appointments" });
+
+            return res.status(401).json({
+
+                success: false,
+
+                message:
+                    "Please login to view appointments"
+            });
         }
-        const appointments = await AppointmentForm.find({ patientId: loggedInUser._id });
-        res.status(200).json({
+
+        const appointments =
+            await AppointmentForm.find({
+
+                patientId: loggedInUser._id
+
+            })
+
+                .populate({
+
+                    path: "doctorId",
+
+                    populate: [
+
+                        {
+                            path: "userId",
+                            select: "name email"
+                        },
+
+                        {
+                            path: "departmentId",
+                            select: "name"
+                        }
+                    ]
+                })
+
+                .populate("slotId")
+
+                .sort({
+                    createdAt: -1
+                });
+
+        return res.status(200).json({
+
             success: true,
-            data: {
-                appointments
-            },
-            message: "Patient appointments fetched successfully",
-        })
+
+            data: appointments,
+
+            message:
+                "Patient appointments fetched successfully"
+        });
+
     } catch (error) {
-        return res.status(500).json({ message: "Server Error" + error.message });
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Server Error " + error.message
+        });
     }
-}
+};
 
 export const cancelAppointment = async (req, res) => {
+
     try {
+
         const loggedInUser = req.user;
 
         if (!loggedInUser) {
+
             return res.status(401).json({
+
                 success: false,
-                message: "Unauthorized. Please login to cancel appointment"
+
+                message:
+                    "Unauthorized. Please login to cancel appointment"
             });
         }
 
         const appointmentId = req.params.id;
 
-        const appointment = await AppointmentForm.findOne({
-            _id: appointmentId,
-            patientId: loggedInUser._id
-        });
+        const appointment =
+            await AppointmentForm.findOne({
+
+                _id: appointmentId,
+
+                patientId: loggedInUser._id
+            });
 
         if (!appointment) {
+
             return res.status(404).json({
+
                 success: false,
-                message: "Appointment not found"
+
+                message:
+                    "Appointment not found"
             });
         }
 
-        if (appointment.status === "Cancelled") {
+        // CHECK ALREADY CANCELLED
+
+        if (
+            appointment.status === "cancelled"
+        ) {
+
             return res.status(400).json({
+
                 success: false,
-                message: "Appointment is already cancelled"
+
+                message:
+                    "Appointment already cancelled"
             });
         }
 
-        appointment.status = "Cancelled";
+        // UPDATE STATUS
+
+        appointment.status = "cancelled";
+
+        // FREE THE SLOT
+
+        await DoctorSlot.findByIdAndUpdate(
+
+            appointment.slotId,
+
+            {
+                status: "AVAILABLE"
+            }
+        );
+
         await appointment.save();
 
         return res.status(200).json({
+
             success: true,
-            message: "Appointment cancelled successfully",
+
+            message:
+                "Appointment cancelled successfully",
+
             data: appointment
         });
 
     } catch (error) {
+
         return res.status(500).json({
+
             success: false,
-            message: "Server error",
+
+            message:
+                "Server error",
+
             error: error.message
         });
     }
 };
-
 
 export const patientLogout = async (req, res) => {
     try {

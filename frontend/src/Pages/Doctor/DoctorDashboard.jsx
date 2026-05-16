@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+
 import {
   CalendarDays,
   Clock3,
@@ -10,18 +11,29 @@ import {
   Bell,
   Plus,
 } from "lucide-react";
+import SlotForm from "../../Components/SlotForm";
+import { getAllAppointments } from "../../hooks/useAllAppointment";
+import { useDoctor } from "../../hooks/useDoctor";
 
 const DoctorDashboard = () => {
+  const [showSlotForm, setShowSlotForm] = useState(false);
+
+  const{data:appointments} = getAllAppointments();
+  const{data:doctorData} = useDoctor();
+
+const totalDoctorAppointments =
+  appointments?.slots?.length || 0;
+
   const stats = [
     {
       title: "Today's Appointments",
-      value: 18,
+      value: 10,
       icon: <CalendarDays className="w-7 h-7 text-sky-600" />,
       bg: "bg-sky-100",
     },
     {
       title: "Available Slots",
-      value: 12,
+      value: totalDoctorAppointments,
       icon: <Clock3 className="w-7 h-7 text-emerald-600" />,
       bg: "bg-emerald-100",
     },
@@ -39,7 +51,7 @@ const DoctorDashboard = () => {
     },
   ];
 
-  const appointments = [
+  const todaysappointments = [
     {
       patient: "Rahul Sharma",
       time: "10:00 AM",
@@ -63,7 +75,7 @@ const DoctorDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-sky-100 p-4 md:p-8">
+    <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-sky-100 p-4 md:p-8">
 
       {/* ================= HEADER ================= */}
 
@@ -81,14 +93,11 @@ const DoctorDashboard = () => {
 
         <div className="flex items-center gap-4">
 
-          <button className="relative p-3 rounded-full bg-white shadow-md hover:shadow-lg transition">
-            <Bell className="w-5 h-5 text-gray-700" />
-
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
-
-          <button className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-5 py-3 rounded-xl shadow-md transition">
+          <button
+            onClick={() => setShowSlotForm(true)}
+            className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-5 py-3 rounded-xl shadow-md transition">
             <Plus className="w-5 h-5" />
+
             Create Slot
           </button>
         </div>
@@ -170,7 +179,7 @@ const DoctorDashboard = () => {
               </thead>
 
               <tbody>
-                {appointments.map((appointment, index) => (
+                {todaysappointments.map((appointment, index) => (
                   <tr
                     key={index}
                     className="border-b border-gray-100 hover:bg-sky-50 transition"
@@ -224,11 +233,11 @@ const DoctorDashboard = () => {
               </div>
 
               <h2 className="mt-4 text-2xl font-bold text-gray-800">
-                Dr. John Doe
+                {doctorData?.data?.loggedinUser?.name || "Dr. John Doe"}
               </h2>
 
               <p className="text-gray-500">
-                Cardiologist
+                {doctorData?.data?.doctorProfile?.departmentId?.name || "Cardiologist"}
               </p>
 
               <div className="mt-6 w-full space-y-3">
@@ -236,14 +245,20 @@ const DoctorDashboard = () => {
                 <div className="flex justify-between text-gray-600">
                   <span>Experience</span>
                   <span className="font-semibold">
-                    5 Years
+                    {doctorData?.data?.doctorProfile?.experience || 10} yrs
                   </span>
                 </div>
 
                 <div className="flex justify-between text-gray-600">
-                  <span>Patients</span>
+                  <span>qualifications</span>
                   <span className="font-semibold">
-                    248
+                    {doctorData?.data?.doctorProfile?.qualifications || 248}
+                  </span>
+                </div>
+                 <div className="flex justify-between text-gray-600">
+                  <span>Specialization</span>
+                  <span className="font-semibold">
+                    {doctorData?.data?.doctorProfile?.specialization}
                   </span>
                 </div>
 
@@ -258,67 +273,22 @@ const DoctorDashboard = () => {
             </div>
           </div>
 
-          {/* ACTIVITY CARD */}
-
-          <div className="bg-white rounded-3xl shadow-md p-6">
-
-            <div className="flex items-center gap-3 mb-5">
-              <Activity className="w-6 h-6 text-sky-600" />
-
-              <h2 className="text-xl font-bold text-gray-800">
-                Recent Activity
-              </h2>
-            </div>
-
-            <div className="space-y-5">
-
-              <div className="flex items-start gap-3">
-                <CircleCheckBig className="w-5 h-5 text-emerald-600 mt-1" />
-
-                <div>
-                  <p className="font-medium text-gray-700">
-                    Appointment completed
-                  </p>
-
-                  <p className="text-sm text-gray-500">
-                    Rahul Sharma - 10:00 AM
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <CircleX className="w-5 h-5 text-red-600 mt-1" />
-
-                <div>
-                  <p className="font-medium text-gray-700">
-                    Appointment cancelled
-                  </p>
-
-                  <p className="text-sm text-gray-500">
-                    Aman Singh - 01:00 PM
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Clock3 className="w-5 h-5 text-yellow-600 mt-1" />
-
-                <div>
-                  <p className="font-medium text-gray-700">
-                    New slot added
-                  </p>
-
-                  <p className="text-sm text-gray-500">
-                    04:00 PM - 05:00 PM
-                  </p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
         </div>
       </div>
+
+      {showSlotForm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-xl w-100">
+            <SlotForm
+              onClose={() => setShowSlotForm(false)}
+              onSubmit={(data) => {
+                console.log("New Slot Data", data);
+                setShowSlotForm(false); // auto close after submit
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -2,55 +2,6 @@ import jwt from "jsonwebtoken";
 import User from "../model/userModel.js";
 
 
-// export const verifyJWT = async (req, res, next) => {
-//     try {
-
-//         const token = req.cookies.token;
-
-//         if (!token) {
-//             return res.status(401).json({
-//                 success: false,
-//                 message: "Unauthorized"
-//             });
-//         }
-
-//         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-//         const user = await User.findById(decoded.userId).select("-password");
-
-//         if (!user) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: "User not found"
-//             });
-//         }
-
-//         if (!user.isActive) {
-//             return res.status(403).json({
-//                 success: false,
-//                 message: "Account disabled"
-//             });
-//         }
-
-//         req.user = {
-//             _id: user._id,
-//             name: user.name,
-//             email: user.email,
-//             role: decoded.role
-//         };
-
-//         next();
-
-//     } catch (error) {
-//         return res.status(401).json({
-//             success: false,
-//             message: "Invalid token"
-//         });
-//     }
-// };
-
-
-
 export const verifyAdminJWT = async (req, res, next) => {
     try {
 

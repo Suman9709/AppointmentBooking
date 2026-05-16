@@ -1,3 +1,4 @@
+import Doctor from "../model/doctorModel.js";
 import User from "../model/userModel.js";
 
 
@@ -55,10 +56,19 @@ export const getDoctorProfile = async (req, res) => {
                 message: "Unauthorized"
             });
         }
-
+        const doctorProfile = await Doctor.findOne({ userId: loggedinUser._id }).populate("departmentId", "name");
+        if (!doctorProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Doctor profile not found",
+            });
+        }
         return res.status(200).json({
             success: true,
-            data: loggedinUser,
+            data: {
+                loggedinUser,
+                doctorProfile,
+            },
             message: "Doctor profile fetched successfully",
         });
 
