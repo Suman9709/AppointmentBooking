@@ -14,12 +14,14 @@ import {
 import SlotForm from "../../Components/SlotForm";
 import { getAllAppointments } from "../../hooks/useAllAppointment";
 import { useDoctor } from "../../hooks/useDoctor";
+import { useCreateSlot } from "../../hooks/useCreateSlot";
 
 const DoctorDashboard = () => {
   const [showSlotForm, setShowSlotForm] = useState(false);
 
   const{data:appointments} = getAllAppointments();
   const{data:doctorData} = useDoctor();
+  const { mutate: createSlot, isPending } = useCreateSlot();
 
 const totalDoctorAppointments =
   appointments?.slots?.length || 0;
@@ -282,8 +284,12 @@ const totalDoctorAppointments =
             <SlotForm
               onClose={() => setShowSlotForm(false)}
               onSubmit={(data) => {
-                console.log("New Slot Data", data);
-                setShowSlotForm(false); // auto close after submit
+                createSlot(data,{
+                  onSuccess:()=>{
+                    setShowSlotForm(false); // auto close after submit
+
+                  }
+                });
               }}
             />
           </div>
