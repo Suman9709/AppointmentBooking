@@ -1,30 +1,40 @@
-import React from "react";
-import {
-  FaUserMd,
-  FaUsers,
-  FaCalendarCheck,
-  FaHospital,
-} from "react-icons/fa";
-import {
-  MdDashboard,
-  MdNotifications,
-} from "react-icons/md";
+import React, { useState } from "react";
+import { FaUserMd, FaUsers, FaCalendarCheck, FaHospital, } from "react-icons/fa";
+import { MdDashboard, } from "react-icons/md";
 import { useAllDoctor } from "../../hooks/useAllDoctor";
 import { useAllDepartments } from "../../hooks/useAllDepartments";
 // import { getAllAppointments } from "../../hooks/useAllAppointment";
 import { getAllAppointmentsForAdminData } from "../../hooks/useAllAppointmentforAdmin";
+import CreateDoctor from "../../Components/CreateDoctor";
+import { useCreateDoctor } from "../../hooks/useCreateDoctor";
 
 const AdminDashboard = () => {
 
-const {data:doctorsData} = useAllDoctor();
-const {data:allDepartments} = useAllDepartments();
-const {data:todaysAppointments} = getAllAppointmentsForAdminData();
+  const [openCreateDoctorModal, setOpenCreateDoctorModal] = useState(false);
 
 
-const totalDoctors = doctorsData?.data?.length || 0;
-const totalDepartments = allDepartments ? allDepartments?.departments?.length : 0;
-const totalAppointments =
-  todaysAppointments?.totalSlotsToday ?? 0;
+
+
+  const { data: doctorsData } = useAllDoctor();
+  const { data: allDepartments } = useAllDepartments();
+  const { data: todaysAppointments } = getAllAppointmentsForAdminData();
+
+  const { mutate: createDoctors, isPending } = useCreateDoctor();
+
+  const totalDoctors = doctorsData?.data?.length || 0;
+  const totalDepartments = allDepartments ? allDepartments?.departments?.length : 0;
+  const totalAppointments =
+    todaysAppointments?.totalSlotsToday ?? 0;
+
+
+
+  const handleCreateDoctor = (data) => {
+    createDoctors(data, {
+      onSuccess: () => {
+        setOpenCreateDoctorModal(false);
+      },
+    });
+  }
   const stats = [
     {
       title: "Total Doctors",
@@ -94,10 +104,16 @@ const totalAppointments =
           </p>
         </div>
 
-        {/* <button className="flex items-center gap-2 bg-white shadow-md px-4 py-2 rounded-xl hover:shadow-lg transition">
-          <MdNotifications className="text-xl text-sky-600" />
-          Notifications
-        </button> */}
+        <button
+          onClick={() => setOpenCreateDoctorModal(true)}
+          className="group flex items-center gap-2 bg-linear-to-r from-blue-500 to-blue-500 text-white px-5 py-3 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-medium">
+
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20 group-hover:rotate-90 transition-transform duration-300">
+            +
+          </span>
+
+          <span>Create Doctor</span>
+        </button>
       </div>
 
       {/* STATS */}
@@ -127,7 +143,16 @@ const totalAppointments =
         ))}
       </div>
 
-     
+      {/* dialog box */}
+
+      <CreateDoctor
+        isOpen={openCreateDoctorModal}
+        onClose={() => setOpenCreateDoctorModal(false)}
+        departments={allDepartments?.departments || []}
+        onSubmit={handleCreateDoctor}
+
+      />
+
     </div>
   );
 };
