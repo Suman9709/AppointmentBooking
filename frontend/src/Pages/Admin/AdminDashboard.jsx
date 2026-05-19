@@ -7,11 +7,13 @@ import { useAllDepartments } from "../../hooks/useAllDepartments";
 import { getAllAppointmentsForAdminData } from "../../hooks/useAllAppointmentforAdmin";
 import CreateDoctor from "../../Components/CreateDoctor";
 import { useCreateDoctor } from "../../hooks/useCreateDoctor";
+import CreateDepartment from "../../Components/CreateDepartment";
+import { useCreateDepartment } from "../../hooks/useCreateDepartment";
 
 const AdminDashboard = () => {
 
   const [openCreateDoctorModal, setOpenCreateDoctorModal] = useState(false);
-
+  const [openCreateDepartmentModal, setOpenCreateDepartmentModal] = useState(false);
 
 
 
@@ -20,6 +22,7 @@ const AdminDashboard = () => {
   const { data: todaysAppointments } = getAllAppointmentsForAdminData();
 
   const { mutate: createDoctors, isPending } = useCreateDoctor();
+  const { mutate: createDepartment } = useCreateDepartment();
 
   const totalDoctors = doctorsData?.data?.length || 0;
   const totalDepartments = allDepartments ? allDepartments?.departments?.length : 0;
@@ -27,11 +30,18 @@ const AdminDashboard = () => {
     todaysAppointments?.totalSlotsToday ?? 0;
 
 
-
   const handleCreateDoctor = (data) => {
     createDoctors(data, {
       onSuccess: () => {
         setOpenCreateDoctorModal(false);
+      },
+    });
+  }
+
+  const handleCreateDepartment = (data) => {
+    createDepartment(data, {
+      onSuccess: () => {
+        setOpenCreateDepartmentModal(false);
       },
     });
   }
@@ -104,16 +114,34 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setOpenCreateDoctorModal(true)}
-          className="group flex items-center gap-2 bg-linear-to-r from-blue-500 to-blue-500 text-white px-5 py-3 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-medium">
+        <div className="flex gap-2 sm:gap-3 flex-wrap">
 
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20 group-hover:rotate-90 transition-transform duration-300">
-            +
-          </span>
+          <button
+            onClick={() =>
+              setOpenCreateDepartmentModal(true)
+            }
+            className="group flex items-center gap-1.5 sm:gap-2 bg-white border border-sky-200 text-sky-700 px-3 sm:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 font-medium text-sm sm:text-base"
+          >
+            <span className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-sky-100 group-hover:rotate-90 transition-transform duration-300 text-sm sm:text-base">
+              +
+            </span>
 
-          <span>Create Doctor</span>
-        </button>
+            <span>Create Department</span>
+          </button>
+
+          <button
+            onClick={() =>
+              setOpenCreateDoctorModal(true)
+            }
+            className="group flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-blue-500 to-blue-500 text-white px-3 sm:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-medium text-sm sm:text-base"
+          >
+            <span className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 group-hover:rotate-90 transition-transform duration-300 text-sm sm:text-base">
+              +
+            </span>
+
+            <span>Create Doctor</span>
+          </button>
+        </div>
       </div>
 
       {/* STATS */}
@@ -151,6 +179,12 @@ const AdminDashboard = () => {
         departments={allDepartments?.departments || []}
         onSubmit={handleCreateDoctor}
 
+      />
+
+      <CreateDepartment
+        isOpen={openCreateDepartmentModal}
+        onClose={() => setOpenCreateDepartmentModal(false)}
+        onSubmit={handleCreateDepartment}
       />
 
     </div>

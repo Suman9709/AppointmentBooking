@@ -95,7 +95,7 @@ const Navbar = () => {
       { name: 'Home', link: '/' },
       { name: 'Dashboard', link: '/admindashboard' },
       // { name: 'Create Doctors', link: '/managedoctors' },
-      { name: 'Doctor List', link: '/doctorlist' }
+      // { name: 'Doctor List', link: '/doctorlist' }
     ],
 
     doctor: [
