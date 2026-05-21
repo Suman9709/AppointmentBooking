@@ -2,7 +2,8 @@ import axios from "axios";
 
 
 const API = axios.create({
-    baseURL: "https://appointmentbooking-mhku.onrender.com",
+    // baseURL: "https://appointmentbooking-mhku.onrender.com",
+    baseURL: "http://localhost:5000",
     withCredentials: true,
 })
 // const API_URL = "http://localhost:5000/api/patient";
@@ -28,6 +29,19 @@ export const patientLogin = async (patientData) => {
         return response.data
     } catch (error) {
         console.error("Error during patient login", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+
+export const patientProfile = async () => {
+    try {
+        const response = await API.get("/api/patient/getPatientDetails")
+        console.log("Patient profile response", response.data);
+        return response.data
+    }
+    catch (error) {
+        console.error("Error fetching patient profile", error.response?.data || error.message);
         throw error;
     }
 }

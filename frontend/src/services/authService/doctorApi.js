@@ -2,7 +2,8 @@ import axios from "axios";
 
 
 const DOCTOR_API = axios.create({
-    baseURL: "https://appointmentbooking-mhku.onrender.com",
+    // baseURL: "https://appointmentbooking-mhku.onrender.com",
+       baseURL: "http://localhost:5000",
     withCredentials: true,
 })
 

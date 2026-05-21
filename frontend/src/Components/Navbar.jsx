@@ -1,152 +1,150 @@
-import React, { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, {
+  useMemo,
+  useState
+} from 'react'
 
-import { usePatient } from '../hooks/usePatient'
-import { useAdmin } from '../hooks/useAdmin'
-// import { useDoctor } from '../hooks/useDoctor'
+import {
+  Link,
+  useNavigate
+} from 'react-router-dom'
 
-import { useLogout } from '../hooks/useLogout'
-import { useDoctor } from '../hooks/useDoctor'
+import { useAuth }
+  from '../context/authContext'
 
 const Navbar = () => {
 
-  // ================= FETCH USERS =================
+  const navigate =
+    useNavigate()
 
-  const { data: patientData } = usePatient()
+  // ================= AUTH =================
 
-  const { data: adminData } = useAdmin()
-
-  // const { data: doctorData } = useDoctor()
-
-  const { data: doctorData } = useDoctor()
-
-  // ================= USER DATA =================
-
-  const patient =
-    patientData?.user || null
-
-  const admin =
-    adminData?.data || null
-
-
-
-  const doctor =
-    doctorData?.data?.loggedinUser || null
-
-  // const doctorProfile =
-  //   doctorData?.data?.doctorProfile || null
-
-
+  const {
+    user,
+    role,
+    logout
+  } = useAuth()
 
   // ================= ROLE =================
 
-  const role = useMemo(() => {
-
-    if (admin?.role === "ADMIN") {
-      return "ADMIN"
-    }
-
-    if (doctor?.role === "DOCTOR") {
-      return "DOCTOR"
-    }
-
-    if (patient?.role === "PATIENT") {
-      return "PATIENT"
-    }
-
-    return null
-
-  }, [admin, doctor, patient])
-
-  const loggedInUser = useMemo(() => {
-
-    switch (role) {
-
-      case "ADMIN":
-        return admin
-
-      case "DOCTOR":
-        return doctor
-
-      case "PATIENT":
-        return patient
-
-      default:
-        return null
-    }
-
-  }, [role, admin, doctor, patient])
+  const loggedInUser =user
+   
 
   // ================= LOGOUT =================
 
-  const logoutMutation = useLogout()
+  const handleLogout =
+    async () => {
 
+      try {
 
+        await logout()
+
+        navigate("/")
+
+      } catch (error) {
+
+        console.error(
+          "Logout failed",
+          error
+        )
+      }
+    }
 
   // ================= MENUS =================
 
   const menu = {
 
     public: [
-      { name: 'Home', link: '/' },
+      {
+        name: 'Home',
+        link: '/'
+      },
     ],
 
     admin: [
-      { name: 'Home', link: '/' },
-      { name: 'Dashboard', link: '/admindashboard' },
-      // { name: 'Create Doctors', link: '/managedoctors' },
-      // { name: 'Doctor List', link: '/doctorlist' }
+      {
+        name: 'Home',
+        link: '/'
+      },
+      {
+        name: 'Dashboard',
+        link:
+          '/admindashboard'
+      },
     ],
 
     doctor: [
-      { name: 'Home', link: '/' },
-      { name: 'Dashboard', link: '/doctordashboard' },
-      { name: 'Appointments', link: '/appointments' },
-      { name: 'Patients', link: '/patients' }
+      {
+        name: 'Home',
+        link: '/'
+      },
+      {
+        name: 'Dashboard',
+        link:
+          '/doctordashboard'
+      },
     ],
 
     patient: [
-      { name: 'Home', link: '/' },
-      { name: 'Dashboard', link: '/patientdashboard' },
-      // { name: 'Book Appointment', link: '/bookappointment' },
-      // { name: 'My Doctors', link: '/mydoctors' },
-      { name: 'My Appointments', link: '/patientdashboard#myappointments' },
+      {
+        name: 'Home',
+        link: '/'
+      },
+      {
+        name: 'Dashboard',
+        link:
+          '/patientdashboard'
+      },
+      {
+        name:
+          'My Appointments',
+        link:
+          '/patientdashboard#myappointments'
+      },
     ]
   }
 
-
-
   // ================= MENU TO SHOW =================
 
-  const menuToShow = useMemo(() => {
+  const menuToShow =
+    useMemo(() => {
 
-    if (admin) {
-      return menu.admin
-    }
+      switch (role) {
 
-    if (doctor) {
-      return menu.doctor
-    }
+        case "admin":
+          return menu.admin
 
-    if (patient) {
-      return menu.patient
-    }
+        case "doctor":
+          return menu.doctor
 
-    return menu.public
+        case "patient":
+          return menu.patient
 
-  }, [admin, doctor, patient])
+        default:
+          return menu.public
+      }
 
-
+    }, [role])
 
   // ================= AVATAR =================
 
   const avatarLetter = useMemo(() => {
-    return loggedInUser?.name?.charAt(0)?.toUpperCase()
-  }, [loggedInUser])
+
+    const userName =
+      loggedInUser?.name ||
+      loggedInUser?.user?.name ||
+      loggedInUser?.loggedinUser?.name ||
+      "";
+
+    return userName.charAt(0).toUpperCase();
+
+  }, [loggedInUser]);
 
   // ================= MOBILE MENU =================
-
-  const [ismobilemenu, setIsmobilemenu] = useState(false)
+  // data.loggedinUser.name 
+  const [
+    ismobilemenu,
+    setIsmobilemenu
+  ] = useState(false)
 
   return (
 
@@ -164,22 +162,26 @@ const Navbar = () => {
           />
         </Link>
 
-
-
         {/* ================= DESKTOP MENU ================= */}
 
         <div className="hidden md:flex items-center gap-6 text-lg font-medium">
 
-          {menuToShow.map((menuItem) => (
+          {menuToShow.map(
+            (menuItem) => (
 
-            <Link
-              key={menuItem.name}
-              to={menuItem.link}
-              className="hover:text-sky-600 transition duration-200">
-              {menuItem.name}
-            </Link>
-
-          ))}
+              <Link
+                key={
+                  menuItem.name
+                }
+                to={
+                  menuItem.link
+                }
+                className="hover:text-sky-600 transition duration-200"
+              >
+                {menuItem.name}
+              </Link>
+            )
+          )}
 
         </div>
 
@@ -196,16 +198,16 @@ const Navbar = () => {
               </p>
 
             </div>
-
           )}
 
           {loggedInUser ? (
 
             <button
-              onClick={() =>
-                logoutMutation.mutate(role)
+              onClick={
+                handleLogout
               }
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200 cursor-pointer">
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200 cursor-pointer"
+            >
               Logout
             </button>
 
@@ -213,15 +215,13 @@ const Navbar = () => {
 
             <Link
               to="/login"
-              className="font-medium hover:text-sky-600 transition duration-200">
+              className="font-medium hover:text-sky-600 transition duration-200"
+            >
               Login
             </Link>
-
           )}
 
         </div>
-
-
 
         {/* ================= MOBILE MENU ================= */}
 
@@ -229,7 +229,9 @@ const Navbar = () => {
 
           <button
             onClick={() =>
-              setIsmobilemenu(!ismobilemenu)
+              setIsmobilemenu(
+                !ismobilemenu
+              )
             }
           >
 
@@ -248,58 +250,85 @@ const Navbar = () => {
                 alt="menu"
                 className="w-6 h-6"
               />
-
             )}
+
           </button>
+
           {/* ================= MOBILE DROPDOWN ================= */}
 
           {ismobilemenu && (
 
             <div className="absolute right-0 top-12 bg-white shadow-xl rounded-xl p-4 flex flex-col gap-4 min-w-55 z-50">
 
-              {menuToShow.map((menuItem) => (
+              {menuToShow.map(
+                (menuItem) => (
 
-                <Link
-                  key={menuItem.name}
-                  to={menuItem.link}
-                  onClick={() =>
-                    setIsmobilemenu(false)
-                  }
-                  className="hover:text-sky-600 transition">
-                  {menuItem.name}
-                </Link>
+                  <Link
+                    key={
+                      menuItem.name
+                    }
+                    to={
+                      menuItem.link
+                    }
+                    onClick={() =>
+                      setIsmobilemenu(
+                        false
+                      )
+                    }
+                    className="hover:text-sky-600 transition"
+                  >
+                    {menuItem.name}
+                  </Link>
+                )
+              )}
 
-              ))}
               {loggedInUser ? (
+
                 <>
                   <p className="font-semibold text-sky-700">
+
                     {
-                      loggedInUser?.name
+                      loggedInUser
+                        ?.name
                         ?.split(" ")[0]
                     }
+
                   </p>
 
                   <button
-                    onClick={() =>
-                      logoutMutation.mutate(role)
+                    onClick={
+                      async () => {
+
+                        await handleLogout()
+
+                        setIsmobilemenu(
+                          false
+                        )
+                      }
                     }
-                    className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition">
+                    className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition"
+                  >
                     Logout
                   </button>
-
                 </>
+
               ) : (
+
                 <Link
                   to="/login"
                   onClick={() =>
-                    setIsmobilemenu(false)
+                    setIsmobilemenu(
+                      false
+                    )
                   }
-                  className="hover:text-sky-600 transition">
+                  className="hover:text-sky-600 transition"
+                >
                   Login
                 </Link>
               )}
             </div>
           )}
+
         </div>
       </div>
     </div>
