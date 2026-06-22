@@ -1,11 +1,4 @@
-import axios from "axios";
-
-
-const API = axios.create({
-    baseURL: "https://appointmentbooking-mhku.onrender.com",
-    // baseURL: "http://localhost:5000",
-    withCredentials: true,
-})
+import API from "../apiClient";
 // const API_URL = "http://localhost:5000/api/patient";
 
 

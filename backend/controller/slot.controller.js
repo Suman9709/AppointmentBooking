@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 import Doctor from "../model/doctorModel.js";
 import DoctorSlot from "../model/doctorSlotModel.js";
+import { parseIndianDateTime } from "../utils/dateTime.js";
 
 
 
@@ -62,15 +63,12 @@ export const createSlot = async (
 
         // CREATE DATETIME
 
-        const startDateTime =
-            new Date(
-                `${date}T${startTime}:00`
-            );
+        const startDateTime = parseIndianDateTime(date, startTime);
+        const endDateTime = parseIndianDateTime(date, endTime);
 
-        const endDateTime =
-            new Date(
-                `${date}T${endTime}:00`
-            );
+        if (!startDateTime || !endDateTime) {
+            return res.status(400).json({ success: false, message: "Invalid date or time" });
+        }
 
         // VALIDATION
 
@@ -83,6 +81,10 @@ export const createSlot = async (
                 message:
                     "Start time must be before end time"
             });
+        }
+
+        if (startDateTime <= new Date()) {
+            return res.status(400).json({ success: false, message: "Slot must be in the future" });
         }
 
         // CHECK OVERLAP
@@ -337,19 +339,25 @@ export const updateSlotById = async (
 
         // BUILD DATETIME
 
-        const updatedStart =
-            startTime
-                ? new Date(
-                    `${date}T${startTime}:00`
-                )
-                : slot.startDateTime;
+        // Rebuild both values in IST whenever a date/time field changes; partial
+        // server-local parsing was the source of shifted appointment times.
+        const effectiveDate = date || new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit"
+        }).format(slot.startDateTime);
+        const updatedStart = (date || startTime)
+            ? parseIndianDateTime(effectiveDate, startTime || new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false
+            }).format(slot.startDateTime))
+            : slot.startDateTime;
+        const updatedEnd = (date || endTime)
+            ? parseIndianDateTime(effectiveDate, endTime || new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false
+            }).format(slot.endDateTime))
+            : slot.endDateTime;
 
-        const updatedEnd =
-            endTime
-                ? new Date(
-                    `${date}T${endTime}:00`
-                )
-                : slot.endDateTime;
+        if (!updatedStart || !updatedEnd) {
+            return res.status(400).json({ success: false, message: "Invalid date or time" });
+        }
 
         // VALIDATION
 
@@ -362,6 +370,10 @@ export const updateSlotById = async (
                 message:
                     "Start time must be before end time"
             });
+        }
+
+        if (updatedStart <= new Date()) {
+            return res.status(400).json({ success: false, message: "Slot must be in the future" });
         }
 
         // OVERLAP CHECK
@@ -451,7 +463,8 @@ export const deleteSlotById = async (
 
                 _id: id,
 
-                doctorId: doctor._id
+                doctorId: doctor._id,
+                status: { $ne: "BOOKED" }
             });
 
         if (!slot) {
@@ -460,7 +473,7 @@ export const deleteSlotById = async (
 
                 success: false,
 
-                message: "Slot not found"
+                message: "Slot not found or already booked"
             });
         }
 

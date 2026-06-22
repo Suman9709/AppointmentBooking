@@ -5,10 +5,10 @@ import Footer from '../Components/Footer'
 
 const MainLayout = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-[#f8f6f7]">
+    <div className="flex min-h-screen flex-col text-slate-800">
       <Navbar />
-      <main style={{ minHeight: "80vh" }} className='grow' >
-       <div className='max-w-7xl mx-auto  '>
+      <main className='min-h-[80vh] grow' >
+       <div>
          <Outlet />
        </div>
       </main>

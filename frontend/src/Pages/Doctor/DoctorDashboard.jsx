@@ -5,23 +5,25 @@ import {
   Clock3,
   Users,
   Stethoscope,
-  Activity,
   CircleCheckBig,
-  CircleX,
-  Bell,
   Plus,
 } from "lucide-react";
 import SlotForm from "../../Components/SlotForm";
-import { getAllAppointments } from "../../hooks/useAllAppointment";
+import { useAllAppointments } from "../../hooks/useAllAppointment";
 import { useDoctor } from "../../hooks/useDoctor";
 import { useCreateSlot } from "../../hooks/useCreateSlot";
+import Loader from "../../Components/Loader";
 
 const DoctorDashboard = () => {
   const [showSlotForm, setShowSlotForm] = useState(false);
 
-  const{data:appointments} = getAllAppointments();
-  const{data:doctorData} = useDoctor();
+  const{data:appointments, isLoading: appointmentsLoading} = useAllAppointments();
+  const{data:doctorData, isLoading: doctorLoading} = useDoctor();
   const { mutate: createSlot, isPending } = useCreateSlot();
+
+  if (appointmentsLoading || doctorLoading) {
+    return <Loader label="Loading doctor dashboard..." fullPage />;
+  }
 
 const totalDoctorAppointments =
   appointments?.slots?.length || 0;
@@ -283,6 +285,7 @@ const totalDoctorAppointments =
           <div className="bg-white p-6 rounded-2xl shadow-xl w-100">
             <SlotForm
               onClose={() => setShowSlotForm(false)}
+              isPending={isPending}
               onSubmit={(data) => {
                 createSlot(data,{
                   onSuccess:()=>{

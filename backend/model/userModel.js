@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
+        select: false,
     },
 
     role: {
@@ -36,29 +37,24 @@ const userSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+// Password hashes must never leave the API, including create/register responses.
+userSchema.set("toJSON", {
+    transform: (_document, value) => {
+        delete value.password;
+        return value;
+    }
+});
+
 
 // HASH PASSWORD
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
+    // Async Mongoose middleware resolves by returning; mixing it with the old
+    // next callback causes "next is not a function" in Mongoose 9.
+    if (!this.isModified("password")) return;
 
- try {
-       if (!this.isModified("password")) {
-           return next();
-       }
-   
-       const salt = await bcrypt.genSalt(10);
-   
-       this.password = await bcrypt.hash(
-           this.password,
-           salt
-       );
-       next();
-   
- } catch (error) {
-   
-    //  next(error);
-        console.error("Error hashing password:", error);
- }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
 });
 
 

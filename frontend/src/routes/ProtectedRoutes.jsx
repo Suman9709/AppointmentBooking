@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
+import Loader from "../Components/Loader";
 
 const ProtectedRoutes = ({
   children,
@@ -15,17 +16,17 @@ const ProtectedRoutes = ({
 
   // wait until auth check completes
   if (loading) {
-    return <h1>Loading...</h1>;
+    return <Loader label="Checking your session..." fullPage />;
   }
 
   // not logged in
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={`/${allowedRole}login`} replace />;
   }
 
   // wrong role
   if (role !== allowedRole) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={`/${allowedRole}login`} replace />;
   }
 
   return children;

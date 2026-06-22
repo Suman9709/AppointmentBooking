@@ -17,8 +17,6 @@ const LoginPage = () => {
   const {
     login,
     loading,
-    error,
-    role,
   } = useAuth();
 
   // detect role from route
@@ -88,18 +86,26 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col justify-center px-4 items-center font-sans">
+    <div className="page-shell grid min-h-[75vh] place-items-center">
 
       <form
         onSubmit={
           handleSubmit
         }
-        className="w-full max-w-sm sm:max-w-md md:max-w-lg p-4 sm:p-6 md:p-8 rounded-lg flex flex-col gap-6 md:gap-8 items-center shadow-lg backdrop-blur-xl bg-linear-to-b from-sky-100 via-sky-50 via-10% to-white"
+        className="glass-card relative flex w-full max-w-lg flex-col items-center gap-6 overflow-hidden rounded-[2rem] p-7 md:p-10"
       >
 
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">
-          {loginRole.toUpperCase()} LOGIN
+          Welcome to your {loginRole} space
         </h1>
+
+        <nav className="flex flex-wrap justify-center gap-2 text-sm" aria-label="Choose login role">
+          {["patient", "doctor", "admin"].map((item) => (
+            <Link key={item} to={`/${item}login`} className={`rounded-full px-3 py-1 capitalize ${loginRole === item ? "bg-sky-600 text-white" : "bg-white text-gray-600"}`}>
+              {item}
+            </Link>
+          ))}
+        </nav>
 
         {/* EMAIL */}
 

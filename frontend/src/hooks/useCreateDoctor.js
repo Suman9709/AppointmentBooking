@@ -11,6 +11,7 @@ export const useCreateDoctor = () => {
             queryClient.invalidateQueries({
                 queryKey: ["getAllDoctor"]
             });
+            queryClient.invalidateQueries({ queryKey: ["dashboardAnalytics", "admin"] });
         },
         onError: (error) => {
             console.error("Error creating doctor", error.response?.data || error.message);

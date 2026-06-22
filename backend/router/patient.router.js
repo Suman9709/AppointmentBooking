@@ -8,7 +8,8 @@ import {
     loginPatient,
     patientLogout,
     signupPatient,
-    updatePatientProfile
+    updatePatientProfile,
+    getPatientDashboardAnalytics
 } from "../controller/patient.controller.js";
 import { verifyPatientJWT } from "../middleware/middleware.js";
 
@@ -34,6 +35,7 @@ patientRouter.get(
     "/getPatientDetails", verifyPatientJWT,
     getPatientProfile
 );
+patientRouter.get("/dashboard-analytics", verifyPatientJWT, getPatientDashboardAnalytics);
 
 patientRouter.put(
     "/updatePatientProfile", verifyPatientJWT,

@@ -35,15 +35,15 @@ const SignupPage = () => {
   }
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center px-4 bg-[#f8f6f7] mt-4">
+    <div className="page-shell grid min-h-[75vh] place-items-center">
 
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md md:max-w-lg p-6 md:p-8 rounded-2xl flex flex-col gap-6 shadow-xl backdrop-blur-xl bg-linear-to-b from-sky-100 via-sky-50 to-white"
+        className="glass-card flex w-full max-w-2xl flex-col gap-6 rounded-[2rem] p-7 md:p-10"
       >
 
         <h1 className="text-2xl md:text-3xl font-semibold text-center">
-          Sign Up
+          Create your patient account
         </h1>
 
         {/* Name */}
@@ -112,7 +112,7 @@ const SignupPage = () => {
           >
             <option value="">Select Gender</option>
             <option value="Male">Male</option>
-            <option value="Female">Female</ option>
+            <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
         </div>
@@ -144,7 +144,7 @@ const SignupPage = () => {
         <p className="text-center text-sm">
           Already have an account?{" "}
           <Link
-            to="/login"
+            to="/patientlogin"
             className="font-semibold relative after:absolute after:left-0 after:-bottom-0.5 after:h-0.5 after:w-0 after:bg-black after:transition-all hover:after:w-full"
           >
             Login

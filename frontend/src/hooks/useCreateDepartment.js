@@ -9,6 +9,7 @@ export const useCreateDepartment = () => {
             console.log("Department created successfully");
             alert("Department created successfully");
             queryClient.invalidateQueries({ queryKey: ["getAllDepartments"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboardAnalytics", "admin"] });
         },
         onError: (error) => {
             console.error("Error creating department", error.response?.data || error.message);

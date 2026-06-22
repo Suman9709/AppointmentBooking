@@ -1,11 +1,4 @@
-import axios from "axios";
-
-
-const DOCTOR_API = axios.create({
-    baseURL: "https://appointmentbooking-mhku.onrender.com",
-    //    baseURL: "http://localhost:5000",
-    withCredentials: true,
-})
+import DOCTOR_API from "../apiClient";
 
 
 export const doctorLogin = async (doctorData) => {

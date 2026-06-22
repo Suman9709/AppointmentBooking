@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { getTodaysAppointmentsForDoctor } from "../services/authService/appointmentApi"
 
 
-export const getAllAppointments = () => {
+export const useAllAppointments = () => {
     return useQuery({
         queryKey: ["getAllAppointments"],
         queryFn: getTodaysAppointmentsForDoctor,

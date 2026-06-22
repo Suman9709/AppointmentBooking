@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { getAllAppointmentsForAdmin } from "../services/authService/appointmentApi"
 
-export const getAllAppointmentsForAdminData = () => {
+export const useAllAppointmentsForAdmin = () => {
     return useQuery({
         queryKey: ["getAllAppointmentsForAdmin"],
         queryFn: getAllAppointmentsForAdmin,

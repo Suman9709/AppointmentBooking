@@ -1,8 +1,8 @@
 import React from "react";
-import AdminDashboard from "../Pages/Admin/AdminDashboard";
+import AdminDashboard from "../Pages/Admin/AdminDashboardLive";
 import LoginPage from "../Components/LoginPage";
-import CreateDoctor from "../Components/CreateDoctor";
 import ProtectedRoutes from "./ProtectedRoutes";
+import AdminProfile from "../Pages/Admin/AdminProfile";
 
 const Adminroutes = [
     {
@@ -11,6 +11,7 @@ const Adminroutes = [
                 <AdminDashboard />
             </ProtectedRoutes>)
     },
+    { path: '/adminprofile', element: <ProtectedRoutes allowedRole="admin"><AdminProfile /></ProtectedRoutes> },
     { path: '/adminlogin', element: <LoginPage /> },
     // {path:'/managedoctors', element:<CreateDoctor />}
 

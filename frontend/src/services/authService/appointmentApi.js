@@ -1,11 +1,4 @@
-import axios from "axios";
-
-
-const APPOINTMENT_API = axios.create({
-    //    baseURL: "http://localhost:5000",
-    baseURL: "https://appointmentbooking-mhku.onrender.com",
-    withCredentials: true,
-})
+import APPOINTMENT_API from "../apiClient";
 
 
 
@@ -43,11 +36,8 @@ export const getTodaysAppointmentsForDoctor = async () => {
 }
 
 export const deleteAppointment = async (appointmentId) => {
-    try {
-
-    } catch (error) {
-
-    }
+    const response = await APPOINTMENT_API.delete(`/api/patient/cancelAppointment/${appointmentId}`);
+    return response.data;
 }
 
 export const getAllAppointmentsForAdmin = async () => {

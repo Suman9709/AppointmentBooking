@@ -4,7 +4,7 @@ import { MdDashboard, } from "react-icons/md";
 import { useAllDoctor } from "../../hooks/useAllDoctor";
 import { useAllDepartments } from "../../hooks/useAllDepartments";
 // import { getAllAppointments } from "../../hooks/useAllAppointment";
-import { getAllAppointmentsForAdminData } from "../../hooks/useAllAppointmentforAdmin";
+import { useAllAppointmentsForAdmin } from "../../hooks/useAllAppointmentforAdmin";
 import CreateDoctor from "../../Components/CreateDoctor";
 import { useCreateDoctor } from "../../hooks/useCreateDoctor";
 import CreateDepartment from "../../Components/CreateDepartment";
@@ -19,9 +19,9 @@ const AdminDashboard = () => {
 
   const { data: doctorsData } = useAllDoctor();
   const { data: allDepartments } = useAllDepartments();
-  const { data: todaysAppointments } = getAllAppointmentsForAdminData();
+  const { data: todaysAppointments } = useAllAppointmentsForAdmin();
 
-  const { mutate: createDoctors, isPending } = useCreateDoctor();
+  const { mutate: createDoctors } = useCreateDoctor();
   const { mutate: createDepartment } = useCreateDepartment();
 
   const totalDoctors = doctorsData?.data?.length || 0;
@@ -73,27 +73,6 @@ const AdminDashboard = () => {
       icon: <FaHospital />,
       bg: "bg-orange-100",
       text: "text-orange-700",
-    },
-  ];
-
-  const recentAppointments = [
-    {
-      patient: "Rishav Kumar",
-      doctor: "Dr. Sarah Smith",
-      date: "12 May 2026",
-      status: "Confirmed",
-    },
-    {
-      patient: "Aman Verma",
-      doctor: "Dr. John Watson",
-      date: "13 May 2026",
-      status: "Pending",
-    },
-    {
-      patient: "Priya Sharma",
-      doctor: "Dr. Michael Brown",
-      date: "14 May 2026",
-      status: "Completed",
     },
   ];
 

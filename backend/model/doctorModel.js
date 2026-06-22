@@ -40,7 +40,7 @@ const doctorSchema = new mongoose.Schema({
 
 // VALIDATION
 
-doctorSchema.pre("save", async function (next) {
+doctorSchema.pre("save", async function () {
 
     const User = mongoose.model("User");
 
@@ -49,18 +49,14 @@ doctorSchema.pre("save", async function (next) {
     );
 
     if (!user) {
-        return next(new Error("User not found"));
+        throw new Error("User not found");
     }
 
     if (user.role !== "DOCTOR") {
-        return next(
-            new Error(
-                "User must have DOCTOR role"
-            )
-        );
+        throw new Error("User must have DOCTOR role");
     }
 
-    // next();
+    // Returning from async middleware continues the save operation.
 });
 
 

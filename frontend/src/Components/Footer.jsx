@@ -2,14 +2,14 @@ import React from 'react'
 
 const Footer = () => {
   return (
-    <footer className="bg-blue-900 text-gray-200 mt-16">
+    <footer className="mt-16 bg-slate-950 text-slate-300">
 
       {/* Top Section */}
       <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
 
         {/* Brand */}
         <div>
-          <h2 className="text-2xl font-bold text-white mb-3">
+            <h2 className="mb-3 text-2xl font-bold text-teal-300">
             MediCare+
           </h2>
           <p className="text-sm text-gray-300 leading-relaxed">
@@ -59,7 +59,7 @@ const Footer = () => {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-blue-800"></div>
+      <div className="border-t border-white/10"></div>
 
       {/* Bottom Section */}
       <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-300">

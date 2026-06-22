@@ -1,15 +1,14 @@
-import React, { use, useState } from "react";
-import { CalendarDays, Clock3, User, Phone, MapPin } from "lucide-react";
+import React, { useState } from "react";
+import { User, Phone, MapPin } from "lucide-react";
 import { useAllDepartments } from "../hooks/useAllDepartments";
 import { useGetSlotByDepartment } from "../hooks/useGetSlotByDepartment";
 import { useBookAppointment } from "../hooks/useBookAppointment";
+import Loader from "./Loader";
+import { formatIndianDate, formatIndianTime } from "../utils/dateTime";
 
 const AppointmentBookingForm = ({
     patient,
-    departments,
-    slots,
-    onSubmit,
-    loading,
+    onBooked,
 }) => {
 
 
@@ -24,21 +23,17 @@ const AppointmentBookingForm = ({
 
 
 
-    const { data: allDepartments } = useAllDepartments()
+    const { data: allDepartments, isLoading: departmentsLoading } = useAllDepartments()
 
     const departmentOptions = allDepartments?.departments || [];
 
 
-    const { data: getSlotsByDepartment } = useGetSlotByDepartment(formData.departmentId)
+    const { data: getSlotsByDepartment, isLoading: slotsLoading, isError: slotsError } = useGetSlotByDepartment(formData.departmentId)
 
     const totalSlots = getSlotsByDepartment?.slots || []
 
 
     const bookingMutation = useBookAppointment();
-    const filteredSlots = slots.filter(
-        (slot) =>
-            slot.doctorId?.departmentId?._id === formData.departmentId
-    );
 
     const handleChange = (e) => {
 
@@ -47,6 +42,8 @@ const AppointmentBookingForm = ({
         setFormData((prev) => ({
             ...prev,
             [name]: value,
+            // Changing department changes the valid slot choices.
+            ...(name === "departmentId" ? { slotId: "" } : {}),
         }));
     };
 
@@ -74,9 +71,7 @@ const AppointmentBookingForm = ({
                 selectedSlot?.doctorId?._id
         };
 
-        bookingMutation.mutate(
-            appointmentData
-        );
+        bookingMutation.mutate(appointmentData, { onSuccess: onBooked });
     };
 
     return (
@@ -200,11 +195,12 @@ const AppointmentBookingForm = ({
                             name="departmentId"
                             value={formData.departmentId}
                             onChange={handleChange}
-                            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400"
+                            disabled={departmentsLoading}
+                            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400 disabled:bg-gray-100"
                         >
 
                             <option value="">
-                                Choose Department
+                                {departmentsLoading ? "Loading departments..." : "Choose Department"}
                             </option>
 
                             {departmentOptions?.map((department) => (
@@ -234,11 +230,12 @@ const AppointmentBookingForm = ({
                             name="slotId"
                             value={formData.slotId}
                             onChange={handleChange}
-                            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400"
+                            disabled={!formData.departmentId || slotsLoading}
+                            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400 disabled:bg-gray-100"
                         >
 
                             <option value="">
-                                Choose Slot
+                                {slotsLoading ? "Loading slots..." : "Choose Slot (IST)"}
                             </option>
 
                             {totalSlots?.map((slot) => (
@@ -251,24 +248,23 @@ const AppointmentBookingForm = ({
                                     Dr. {slot.doctorId?.userId?.name}
                                     {" | "}
 
-                                    {new Date(
-                                        slot.startDateTime
-                                    ).toLocaleDateString()}
+                                    {formatIndianDate(slot.startDateTime)}
 
                                     {" | "}
 
-                                    {new Date(
-                                        slot.startDateTime
-                                    ).toLocaleTimeString([], {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                    })}
+                                    {formatIndianTime(slot.startDateTime)} - {formatIndianTime(slot.endDateTime)} IST
 
                                 </option>
 
                             ))}
 
                         </select>
+
+                        {slotsLoading && <Loader label="Finding available slots..." />}
+                        {slotsError && <p className="mt-2 text-sm text-red-600">Could not load slots. Please try again.</p>}
+                        {formData.departmentId && !slotsLoading && !slotsError && totalSlots.length === 0 && (
+                            <p className="mt-2 text-sm text-gray-500">No upcoming slots are available for this department.</p>
+                        )}
 
                     </div>
 

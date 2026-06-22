@@ -1,6 +1,9 @@
 import Doctor from "../model/doctorModel.js";
 import DoctorSlot from "../model/doctorSlotModel.js";
 import User from "../model/userModel.js";
+import Patient from "../model/PatientModel.js";
+import Department from "../model/departmentModel.js";
+import AppointmentForm from "../model/appointmentFormModel.js";
 
 export const createDoctor = async (req, res) => {
 
@@ -399,7 +402,7 @@ export const getAdminTotalAppointments = async (req, res) => {
     try {
 
         const totalAppointments =
-            await Appointment.countDocuments();
+            await AppointmentForm.countDocuments();
 
         return res.status(200).json({
             success: true,
@@ -411,6 +414,38 @@ export const getAdminTotalAppointments = async (req, res) => {
             success: false,
             message: error.message
         });
+    }
+};
+
+// One aggregated response keeps dashboard cards and charts consistent and avoids
+// several independent requests observing different database snapshots.
+export const getAdminDashboardAnalytics = async (req, res) => {
+    try {
+        const [doctors, patients, departments, appointments, statuses, recentAppointments] = await Promise.all([
+            Doctor.countDocuments(),
+            Patient.countDocuments(),
+            Department.countDocuments(),
+            AppointmentForm.countDocuments(),
+            AppointmentForm.aggregate([{ $group: { _id: "$status", value: { $sum: 1 } } }]),
+            AppointmentForm.find()
+                .populate("patientId", "name email")
+                .populate({ path: "doctorId", populate: { path: "userId", select: "name" } })
+                .populate("slotId")
+                .sort({ createdAt: -1 })
+                .limit(8)
+                .lean(),
+        ]);
+
+        return res.json({
+            success: true,
+            data: {
+                totals: { doctors, patients, departments, appointments },
+                statusBreakdown: statuses.map(({ _id, value }) => ({ name: _id, value })),
+                recentAppointments,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 

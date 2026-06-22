@@ -9,7 +9,10 @@ export const useCreateSlot = () => {
         mutationFn: doctorCreateSlot,
         onSuccess: () => {
             alert("Slot created successfully");
+            // Refresh both dashboard aliases because they read the same slot list.
             queryClient.invalidateQueries({ queryKey: ["getAllAppointments"] });
+            queryClient.invalidateQueries({ queryKey: ["getSlot"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboardAnalytics", "doctor"] });
         },
         onError: (error) => {
             console.error("Error creating slot", error.response?.data || error.message);

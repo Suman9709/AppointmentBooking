@@ -53,47 +53,33 @@ export const AuthProvider =
       async () => {
         setError(null);
         try {
+          // Authenticate only the role represented by this tab's URL. Separate
+          // role cookies can then coexist without admin always winning the probe.
+          const path = window.location.pathname;
+          const expectedRole = path.startsWith("/admin") ? "admin"
+            : path.startsWith("/doctor") ? "doctor"
+            : path.startsWith("/patient") ? "patient"
+            : null;
 
-          try {
-            const admin =
-              await adminProfile();
-
-            setUser(admin.data);
-            setRole("admin");
-            setIsAuthenticated(true);
-
+          if (!expectedRole) {
+            setUser(null); setRole(null); setIsAuthenticated(false);
             return;
-          } catch { }
+          }
 
-          try {
-            const doctor =
-              await doctorProfile();
+          const profile = expectedRole === "admin" ? await adminProfile()
+            : expectedRole === "doctor" ? await doctorProfile()
+            : await patientProfile();
+          const profileUser = expectedRole === "admin" ? profile.data
+            : expectedRole === "doctor" ? profile.data.loggedinUser
+            : profile.data.user;
 
-            setUser(doctor.data.loggedinUser);
-            setRole("doctor");
-            setIsAuthenticated(true);
-
-            return;
-          } catch { }
-
-          try {
-            const patient =
-              await patientProfile();
-
-            setUser(patient.data.user);
-            setRole("patient");
-            setIsAuthenticated(true);
-
-            return;
-          } catch { }
-
-          setUser(null);
-          setRole(null);
-          setIsAuthenticated(false);
+          setUser(profileUser);
+          setRole(expectedRole);
+          setIsAuthenticated(true);
 
         } catch (error) {
-
-          setError(error);
+          setUser(null); setRole(null); setIsAuthenticated(false);
+          if (error.response?.status !== 401) setError(error);
 
         } finally {
 
@@ -189,6 +175,7 @@ export const AuthProvider =
           role,
           login,
           logout,
+          refreshAuth: checkAuth,
         }}
       >
         {children}
@@ -196,6 +183,8 @@ export const AuthProvider =
     );
   };
 
+// The hook intentionally shares this module with its provider.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth =
   () =>
     useContext(AuthContext);

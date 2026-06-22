@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { CalendarDays, Clock3 } from "lucide-react";
 
-const SlotForm = ({ onClose, onSubmit }) => {
+const SlotForm = ({ onClose, onSubmit, isPending = false }) => {
+
+  const todayInIndia = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
 
   const [formData, setFormData] = useState({
     date: "",
@@ -67,6 +71,7 @@ const SlotForm = ({ onClose, onSubmit }) => {
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
+                min={todayInIndia}
                 className="w-full outline-none bg-transparent"
                 required
               />
@@ -133,9 +138,10 @@ const SlotForm = ({ onClose, onSubmit }) => {
 
             <button
               type="submit"
-              className="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white transition font-medium shadow-md cursor-pointer"
+              disabled={isPending}
+              className="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white transition font-medium shadow-md cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Create Slot
+              {isPending ? "Creating..." : "Create Slot"}
             </button>
 
           </div>

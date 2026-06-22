@@ -114,7 +114,7 @@ export const adminLogin = async (req,res) => {
 
         // FIND ADMIN
 
-        const user =await User.findOne({email,role: "ADMIN"});
+        const user =await User.findOne({email,role: "ADMIN"}).select("+password");
 
 
         if (!user) {
@@ -126,6 +126,10 @@ export const adminLogin = async (req,res) => {
                 message:"Invalid credentials"
 
             });
+        }
+
+        if (!user.isActive) {
+            return res.status(403).json({ success: false, message: "Account is deactivated" });
         }
 
 
@@ -285,5 +289,18 @@ export const adminLogout = async (
                 error.message
 
         });
+    }
+};
+
+export const updateAdminProfile = async (req, res) => {
+    try {
+        const { name, email } = req.body;
+        if (name !== undefined) req.user.name = name;
+        if (email !== undefined) req.user.email = email;
+        await req.user.save();
+        return res.json({ success: true, message: "Admin profile updated", data: req.user });
+    } catch (error) {
+        const status = error.code === 11000 ? 409 : 500;
+        return res.status(status).json({ success: false, message: error.code === 11000 ? "Email is already in use" : error.message });
     }
 };

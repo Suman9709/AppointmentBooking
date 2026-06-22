@@ -70,6 +70,7 @@ const Navbar = () => {
         link:
           '/admindashboard'
       },
+      { name: 'Profile', link: '/adminprofile' },
     ],
 
     doctor: [
@@ -82,6 +83,7 @@ const Navbar = () => {
         link:
           '/doctordashboard'
       },
+      { name: 'Profile', link: '/doctorprofile' },
     ],
 
     patient: [
@@ -94,6 +96,7 @@ const Navbar = () => {
         link:
           '/patientdashboard'
       },
+      { name: 'Profile', link: '/patientprofile' },
       {
         name:
           'My Appointments',
@@ -105,25 +108,7 @@ const Navbar = () => {
 
   // ================= MENU TO SHOW =================
 
-  const menuToShow =
-    useMemo(() => {
-
-      switch (role) {
-
-        case "admin":
-          return menu.admin
-
-        case "doctor":
-          return menu.doctor
-
-        case "patient":
-          return menu.patient
-
-        default:
-          return menu.public
-      }
-
-    }, [role])
+  const menuToShow = menu[role] || menu.public
 
   // ================= AVATAR =================
 
@@ -148,9 +133,9 @@ const Navbar = () => {
 
   return (
 
-    <div className="w-full px-4 mt-6">
+    <header className="sticky top-0 z-40 w-full px-3 pt-3 md:px-6">
 
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-2 md:px-8 border border-gray-200 rounded-full bg-linear-to-r from-white via-sky-100 via-70% to-white backdrop-blur-xl shadow-md">
+      <div className="mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/80 bg-white/78 px-4 py-2 shadow-lg shadow-slate-200/50 backdrop-blur-xl md:px-7">
 
         {/* ================= LOGO ================= */}
 
@@ -158,7 +143,7 @@ const Navbar = () => {
           <img
             src="/image/logo.png"
             alt="logo"
-            className="w-12 h-12 md:w-14 md:h-14"
+            className="h-11 w-11 rounded-xl object-contain md:h-12 md:w-12"
           />
         </Link>
 
@@ -214,7 +199,7 @@ const Navbar = () => {
           ) : (
 
             <Link
-              to="/login"
+              to="/patientlogin"
               className="font-medium hover:text-sky-600 transition duration-200"
             >
               Login
@@ -315,7 +300,7 @@ const Navbar = () => {
               ) : (
 
                 <Link
-                  to="/login"
+                  to="/patientlogin"
                   onClick={() =>
                     setIsmobilemenu(
                       false
@@ -331,7 +316,7 @@ const Navbar = () => {
 
         </div>
       </div>
-    </div>
+    </header>
   )
 }
 
